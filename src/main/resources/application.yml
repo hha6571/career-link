@@ -1,0 +1,104 @@
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+app:
+  frontend:
+    base-url: "https://careerlink.online/"
+  redis:
+    onboardingKeyPrefix: "onboarding:"
+    onboardingTtlSeconds: 1800   # 30분
+  cookie:
+    secure: true
+    same-site: None
+
+spring:
+  application:
+    name:
+
+  profiles:
+    active: prod
+
+  jwt:
+    header: Authorization
+    secret: ${JWT_SECRET}
+    token-validity-in-seconds: 86400
+
+  datasource:
+    url: ${MYSQL_DB_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_USER_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  data:
+    redis:
+      host: ${REDIS_URL}
+      port : ${REDIS_PORT}
+      password : ${REDIS_PASSWORD}
+
+  logging:
+    level:
+      root: INFO
+      com.career.careerlink: DEBUG
+      org.springframework.security: DEBUG
+
+  jackson:
+    coercion:
+      allow-empty-string-to-null: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GOOGLE_EMAIL_USERNAME}
+    password: ${GOOGLE_EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_CLOUD_ACCESS_KEY}
+        secret-key: ${AWS_CLOUD_SECRET_KEY}
+      region:
+        static: ${AWS_REGION}
+        auto: false
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+      stack:
+        auto: false
+
+  coolsms:
+    api-key: ${COOLSMS_API_KEY}
+    secret-key: ${COOLSMS_SECRET_KEY}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLINENT_ID}
+            client-secret: ${GOOGLE_CLINENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URL}
+            scope:
+              - profile
+              - email
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.career.careerlink.dashboard.mapper.StatsMapper">
+
+    <resultMap id="PointMap" type="com.career.careerlink.dashboard.dto.PointDto">
+        <result column="x" property="x"/>
+        <result column="y" property="y"/>
+    </resultMap>
+
+    <!-- 등록 공고 수 -->
+    <select id="countPostings" resultMap="PointMap">
+        <choose>
+
+            <when test="granularity != null and granularity.name() == 'DAY'">
+                WITH RECURSIVE days(dt) AS (
+                SELECT DATE(#{from})
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 DAY)
+                FROM days
+                WHERE dt <![CDATA[<]]> DATE(#{to})
+                )
+                SELECT
+                    DATE_FORMAT(d.dt, '%Y-%m-%d') AS x,
+                    COALESCE(cnt.c, 0)            AS y
+                FROM days d
+                LEFT JOIN (
+                    SELECT DATE(jp.created_at) AS dt, COUNT(*) AS c
+                    FROM job_postings jp
+
+                <if test="employerUserId != null">
+                    INNER JOIN employer_users eu
+                    ON eu.employer_user_id = #{employerUserId}
+                    AND eu.employer_id = jp.employer_id
+                </if>
+
+                    WHERE jp.created_at <![CDATA[>=]]> #{from}
+                        AND jp.created_at <![CDATA[<]]>  #{to}
+                    GROUP BY DATE(jp.created_at)
+                ) cnt ON cnt.dt = d.dt
+                ORDER BY d.dt
+            </when>
+
+            <when test="granularity != null and granularity.name() == 'MONTH'">
+                WITH RECURSIVE months(dt) AS (
+                SELECT STR_TO_DATE(DATE_FORMAT(DATE(#{from}), '%Y-%m-01'), '%Y-%m-%d')
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 MONTH)
+                FROM months
+                WHERE dt <![CDATA[<]]> STR_TO_DATE(DATE_FORMAT(DATE(#{to}), '%Y-%m-01'), '%Y-%m-%d')
+                )
+                SELECT
+                    DATE_FORMAT(m.dt, '%Y-%m') AS x,
+                    COALESCE(cnt.c, 0)         AS y
+                FROM months m
+                LEFT JOIN (
+                    SELECT
+                        STR_TO_DATE(DATE_FORMAT(jp.created_at, '%Y-%m-01'), '%Y-%m-%d') AS dt,
+                        COUNT(*) AS c
+                    FROM job_postings jp
+
+                <if test="employerUserId != null">
+                    INNER JOIN employer_users eu
+                    ON eu.employer_user_id = #{employerUserId}
+                    AND eu.employer_id = jp.employer_id
+                </if>
+
+                WHERE jp.created_at <![CDATA[>=]]> #{from}
+                        AND jp.created_at <![CDATA[<]]>  #{to}
+                    GROUP BY STR_TO_DATE(DATE_FORMAT(jp.created_at, '%Y-%m-01'), '%Y-%m-%d')
+                ) cnt ON cnt.dt = m.dt
+                ORDER BY m.dt
+            </when>
+
+            <when test="granularity != null and granularity.name() == 'YEAR'">
+                WITH RECURSIVE years(dt) AS (
+                SELECT MAKEDATE(YEAR(DATE(#{from})), 1)
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 YEAR)
+                FROM years
+                WHERE dt <![CDATA[<]]> MAKEDATE(YEAR(DATE(#{to})), 1)
+                )
+                SELECT
+                    DATE_FORMAT(y.dt, '%Y') AS x,
+                    COALESCE(cnt.c, 0)      AS y
+                FROM years y
+                LEFT JOIN (
+                    SELECT
+                        MAKEDATE(YEAR(jp.created_at), 1) AS dt,   /* 조인키 */
+                        COUNT(*)                          AS c    /* 카운트 */
+                    FROM job_postings jp
+
+                <if test="employerUserId != null">
+                    INNER JOIN employer_users eu
+                    ON eu.employer_user_id = #{employerUserId}
+                    AND eu.employer_id = jp.employer_id
+                </if>
+
+                WHERE jp.created_at <![CDATA[>=]]> #{from}
+                        AND jp.created_at <![CDATA[<]]>  #{to}
+                    GROUP BY MAKEDATE(YEAR(jp.created_at), 1)
+                ) cnt ON cnt.dt = y.dt
+                ORDER BY y.dt
+            </when>
+
+        </choose>
+    </select>
+
+
+    <!-- 지원자 수 -->
+    <select id="countApplicants" resultMap="PointMap">
+        <choose>
+
+            <when test="granularity != null and granularity.name() == 'DAY'">
+                WITH RECURSIVE days(dt) AS (
+                SELECT DATE(#{from})
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 DAY)
+                FROM days
+                WHERE dt <![CDATA[<]]> DATE(#{to})
+                )
+                SELECT
+                DATE_FORMAT(d.dt, '%Y-%m-%d') AS x,
+                COALESCE(cnt.c, 0)            AS y
+                FROM days d
+                LEFT JOIN (
+                SELECT DATE(app.applied_at) AS dt, COUNT(*) AS c
+                FROM applications app
+
+                <if test="employerUserId != null">
+                    INNER JOIN job_postings jp
+                    ON jp.job_posting_id = app.job_posting_id
+                    INNER JOIN employer_users eu
+                    ON eu.employer_user_id = #{employerUserId}
+                    AND eu.employer_id = jp.employer_id
+                </if>
+
+                WHERE app.applied_at <![CDATA[>=]]> #{from}
+                AND app.applied_at <![CDATA[<]]>  #{to}
+                GROUP BY DATE(app.applied_at)
+                ) cnt ON cnt.dt = d.dt
+                ORDER BY d.dt
+            </when>
+
+            <when test="granularity != null and granularity.name() == 'MONTH'">
+                WITH RECURSIVE months(dt) AS (
+                SELECT STR_TO_DATE(DATE_FORMAT(DATE(#{from}), '%Y-%m-01'), '%Y-%m-%d')
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 MONTH)
+                FROM months
+                WHERE dt <![CDATA[<]]> STR_TO_DATE(DATE_FORMAT(DATE(#{to}), '%Y-%m-01'), '%Y-%m-%d')
+                )
+                SELECT
+                DATE_FORMAT(m.dt, '%Y-%m') AS x,
+                COALESCE(cnt.c, 0)         AS y
+                FROM months m
+                LEFT JOIN (
+                SELECT
+                STR_TO_DATE(DATE_FORMAT(app.applied_at, '%Y-%m-01'), '%Y-%m-%d') AS dt,
+                COUNT(*) AS c
+                FROM applications app
+
+                <if test="employerUserId != null">
+                    INNER JOIN job_postings jp
+                    ON jp.job_posting_id = app.job_posting_id
+                    INNER JOIN employer_users eu
+                    ON eu.employer_user_id = #{employerUserId}
+                    AND eu.employer_id = jp.employer_id
+                </if>
+
+                WHERE app.applied_at <![CDATA[>=]]> #{from}
+                AND app.applied_at <![CDATA[<]]>  #{to}
+                GROUP BY STR_TO_DATE(DATE_FORMAT(app.applied_at, '%Y-%m-01'), '%Y-%m-%d')
+                ) cnt ON cnt.dt = m.dt
+                ORDER BY m.dt
+            </when>
+
+            <when test="granularity != null and granularity.name() == 'YEAR'">
+                WITH RECURSIVE years(dt) AS (
+                SELECT MAKEDATE(YEAR(DATE(#{from})), 1)
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 YEAR)
+                FROM years
+                WHERE dt <![CDATA[<]]> MAKEDATE(YEAR(DATE(#{to})), 1)
+                )
+                SELECT
+                DATE_FORMAT(y.dt, '%Y') AS x,
+                COALESCE(cnt.c, 0)      AS y
+                FROM years y
+                LEFT JOIN (
+                SELECT
+                MAKEDATE(YEAR(app.applied_at), 1) AS dt,   /* 조인키 */
+                COUNT(*)                          AS c    /* 카운트 */
+                FROM applications app
+
+                <if test="employerUserId != null">
+                    INNER JOIN job_postings jp
+                    ON jp.job_posting_id = app.job_posting_id
+                    INNER JOIN employer_users eu
+                    ON eu.employer_user_id = #{employerUserId}
+                    AND eu.employer_id = jp.employer_id
+                </if>
+
+                WHERE app.applied_at <![CDATA[>=]]> #{from}
+                AND app.applied_at <![CDATA[<]]>  #{to}
+                GROUP BY MAKEDATE(YEAR(app.applied_at), 1)
+                ) cnt ON cnt.dt = y.dt
+                ORDER BY y.dt
+            </when>
+
+        </choose>
+    </select>
+
+</mapper>

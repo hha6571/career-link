@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.career.careerlink.applicant.mapper.CoverLetterMapper">
+
+<!--    <select id="findDetailById" parameterType="int" resultMap="CoverLetterResultMap">-->
+<!--        SELECT-->
+<!--            c.cover_letter_id    AS coverLetterId,-->
+<!--            c.user_id            AS userId,-->
+<!--            c.cover_letter_title AS coverLetterTitle,-->
+<!--            c.is_active          AS isActive,-->
+<!--            c.created_at         AS createdAt,-->
+<!--            c.updated_at         AS updatedAt,-->
+<!--            i.item_id            AS itemId,-->
+<!--            i.title              AS itemTitle,-->
+<!--            i.content            AS itemContent-->
+<!--        FROM cover_letter c-->
+<!--                 LEFT JOIN cover_letter_item i-->
+<!--                           ON c.cover_letter_id = i.cover_letter_id-->
+<!--        WHERE c.cover_letter_id = #{coverLetterId}-->
+<!--    </select>-->
+
+<!--    <resultMap id="CoverLetterResultMap" type="com.career.careerlink.applicant.dto.CoverLetterDto">-->
+<!--        <id property="coverLetterId" column="coverLetterId"/>-->
+<!--        <result property="userId" column="userId"/>-->
+<!--        <result property="coverLetterTitle" column="coverLetterTitle"/>-->
+<!--        <result property="isActive" column="isActive"/>-->
+<!--        <result property="createdAt" column="createdAt"/>-->
+<!--        <result property="updatedAt" column="updatedAt"/>-->
+
+<!--        <collection property="items" ofType="com.career.careerlink.applicant.dto.CoverLetterItemDto">-->
+<!--            <id property="itemId" column="itemId"/>-->
+<!--            <result property="title" column="itemTitle"/>-->
+<!--            <result property="content" column="itemContent"/>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+
+</mapper>
