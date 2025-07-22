@@ -1,12 +1,13 @@
-package com.career.careerlink.applicant.entity;
+package com.career.careerlink.users.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import com.career.careerlink.applicant.entity.enums.AgreementStatus;
-import com.career.careerlink.applicant.entity.enums.UserStatus;
+import com.career.careerlink.users.entity.enums.AgreementStatus;
+import com.career.careerlink.users.entity.enums.UserStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "applicants")
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Applicant {
+public class applicants {
     @Id
     @Column(name = "user_id")
     private String userId;
@@ -51,10 +52,10 @@ public class Applicant {
     private String email;
 
     @Column(name = "last_login_at")
-    private LocalDate lastLoginAt;
+    private LocalDateTime lastLoginAt;
 
     @Column(name = "dormant_at")
-    private LocalDate dormantAt;
+    private LocalDateTime dormantAt;
 
     @Column(name = "agree_terms")
     @ColumnDefault("'Y'")
@@ -76,16 +77,23 @@ public class Applicant {
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @PrePersist
     public void prePersist() {
         if (this.userStatus == null) {
             this.userStatus = UserStatus.ACTIVE;
         }
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    @Column(name = "created_at")
-    private LocalDate createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDate updatedAt;
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

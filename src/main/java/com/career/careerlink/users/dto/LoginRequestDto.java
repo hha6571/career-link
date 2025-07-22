@@ -1,4 +1,4 @@
-package com.career.careerlink.applicant.dto;
+package com.career.careerlink.users.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

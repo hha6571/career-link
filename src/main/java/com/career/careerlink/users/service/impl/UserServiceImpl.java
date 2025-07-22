@@ -1,43 +1,43 @@
-package com.career.careerlink.applicant.service.impl;
+package com.career.careerlink.users.service.impl;
 
-import com.career.careerlink.applicant.dto.LoginRequestDto;
-import com.career.careerlink.applicant.dto.SignupRequestDto;
-import com.career.careerlink.applicant.dto.TokenRequestDto;
-import com.career.careerlink.applicant.dto.TokenResponse;
-import com.career.careerlink.applicant.entity.Applicant;
-import com.career.careerlink.applicant.entity.enums.AgreementStatus;
-import com.career.careerlink.applicant.repository.ApplicantRepository;
-import com.career.careerlink.applicant.service.ApplicantService;
+import com.career.careerlink.users.dto.LoginRequestDto;
+import com.career.careerlink.users.dto.SignupRequestDto;
+import com.career.careerlink.users.dto.TokenRequestDto;
+import com.career.careerlink.users.dto.TokenResponse;
+import com.career.careerlink.users.entity.applicants;
+import com.career.careerlink.users.repository.UserRepository;
+import com.career.careerlink.users.service.UserService;
 import com.career.careerlink.global.redis.RedisUtil;
 import com.career.careerlink.global.security.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.career.careerlink.global.util.UserIdGenerator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class ApplicantServiceImpl implements ApplicantService {
+public class UserServiceImpl implements UserService {
 
-    private final ApplicantRepository applicantRepository;
+    private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
-    Applicant entity = new Applicant();
 
     @Override
     public boolean isLoginIdDuplicate(String loginId) {
-        return applicantRepository.existsByLoginId(loginId);
+        return userRepository.existsByLoginId(loginId);
     }
 
     @Override
     public void signup(SignupRequestDto dto) {
         String encodedPassword = passwordEncoder.encode(dto.getPasswordHash());
-        String generatedUserId = UserIdGenerator.generate();
+        String generatedUserId = UserIdGenerator.generate("USR");
 
-        Applicant newApplicant = Applicant.builder()
+        applicants newApplicants = applicants.builder()
                 .userId(generatedUserId)
                 .loginId(dto.getLoginId())
                 .password(encodedPassword)
@@ -59,28 +59,40 @@ public class ApplicantServiceImpl implements ApplicantService {
                 .updatedAt(dto.getUpdatedAt())
                 .build();
 
-        applicantRepository.save(newApplicant);
+        userRepository.save(newApplicants);
     }
 
     @Override
-    public TokenResponse login(LoginRequestDto dto) {
-        Applicant user = applicantRepository.findByLoginId(dto.getLoginId())
+    public TokenResponse login(LoginRequestDto dto, HttpServletResponse response) {
+        applicants applicants = userRepository.findByLoginId(dto.getLoginId())
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), applicants.getPassword())) {
             throw new RuntimeException("비밀번호 불일치");
         }
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getUserId().toString());
-        String refreshToken = jwtTokenProvider.createRefreshToken();
+        String accessToken = jwtTokenProvider.createAccessToken(applicants.getUserId().toString());
+        String refreshToken = jwtTokenProvider.createRefreshToken(applicants.getUserId().toString());
 
-        redisUtil.set("refresh:" + user.getUserId(), refreshToken, jwtTokenProvider.getRefreshTokenExpiration());
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false) // 운영 배포땐 true로 설정
+                .path("/")
+                .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
+                .sameSite("Strict")
+                .build();
+
+        response.setHeader("Set-Cookie", refreshCookie.toString());
+
+        redisUtil.set("refresh:" + applicants.getUserId(), refreshToken, jwtTokenProvider.getRefreshTokenExpiration());
+
+        applicants.setLastLoginAt(LocalDateTime.now());
 
         return new TokenResponse(accessToken, refreshToken);
     }
 
     @Override
-    public TokenResponse reissue(TokenRequestDto dto) {
+    public TokenResponse reissue(TokenRequestDto dto, HttpServletResponse response) {
         if (!jwtTokenProvider.validateToken(dto.getRefreshToken())) {
             throw new RuntimeException("유효하지 않은 리프레시 토큰");
         }
@@ -93,9 +105,19 @@ public class ApplicantServiceImpl implements ApplicantService {
         }
 
         String newAccessToken = jwtTokenProvider.createAccessToken(userId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken();
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
 
         redisUtil.set("refresh:" + userId, newRefreshToken, jwtTokenProvider.getRefreshTokenExpiration());
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                .httpOnly(true)
+                .secure(false) // 운영 배포땐 true로 설정
+                .path("/")
+                .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
+                .sameSite("Strict")
+                .build();
+
+        response.setHeader("Set-Cookie", refreshCookie.toString());
 
         return new TokenResponse(newAccessToken, newRefreshToken);
     }

@@ -1,4 +1,4 @@
-package com.career.careerlink.applicant.entity.enums;
+package com.career.careerlink.users.entity.enums;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

@@ -1,7 +1,7 @@
-package com.career.careerlink.applicant.dto;
+package com.career.careerlink.users.dto;
 
-import com.career.careerlink.applicant.entity.enums.AgreementStatus;
-import com.career.careerlink.applicant.entity.enums.UserStatus;
+import com.career.careerlink.users.entity.enums.AgreementStatus;
+import com.career.careerlink.users.entity.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -27,12 +28,12 @@ public class SignupRequestDto {
     private String gender;
     private String userType;
     private String email;
-    private LocalDate lastLoginAt;
-    private LocalDate dormantAt;
+    private LocalDateTime lastLoginAt;
+    private LocalDateTime dormantAt;
     private AgreementStatus agreeTerms;
     private AgreementStatus agreePrivacy;
     private AgreementStatus agreeMarketing;
     private UserStatus userStatus;
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

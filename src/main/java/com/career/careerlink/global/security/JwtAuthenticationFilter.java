@@ -46,9 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             log.warn("토큰 검증 중 예외 발생: {}", e.getMessage());
-            // 필요 시 응답 상태 조작 가능
-            // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            // return;
         }
 
         filterChain.doFilter(request, response);
