@@ -73,6 +73,7 @@ public class UserServiceImpl implements UserService {
 
         String accessToken = jwtTokenProvider.createAccessToken(applicants.getUserId().toString());
         String refreshToken = jwtTokenProvider.createRefreshToken(applicants.getUserId().toString());
+        long expiresIn = jwtTokenProvider.getRemainingTime(accessToken);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
@@ -88,7 +89,7 @@ public class UserServiceImpl implements UserService {
 
         applicants.setLastLoginAt(LocalDateTime.now());
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponse(accessToken, refreshToken, expiresIn);
     }
 
     @Override
@@ -106,6 +107,7 @@ public class UserServiceImpl implements UserService {
 
         String newAccessToken = jwtTokenProvider.createAccessToken(userId);
         String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
+        long expiresIn = jwtTokenProvider.getRemainingTime(newAccessToken);
 
         redisUtil.set("refresh:" + userId, newRefreshToken, jwtTokenProvider.getRefreshTokenExpiration());
 
@@ -118,8 +120,8 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         response.setHeader("Set-Cookie", refreshCookie.toString());
-
-        return new TokenResponse(newAccessToken, newRefreshToken);
+        System.out.println("==================토큰 재발급 완료 ===========");
+        return new TokenResponse(newAccessToken, newRefreshToken, expiresIn);
     }
 
     @Override
@@ -135,5 +137,6 @@ public class UserServiceImpl implements UserService {
 
         long remainTime = jwtTokenProvider.getRemainingTime(token);
         redisUtil.set("blacklist:" + token, "logout", remainTime);
+    System.out.println("==================로그아웃처리 완료 ===========");
     }
 }
