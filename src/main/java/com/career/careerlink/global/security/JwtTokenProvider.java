@@ -65,6 +65,10 @@ public class JwtTokenProvider {
         return refreshTokenExpiration;
     }
 
+    public long getAccessTokenExpiration() {
+        return accessTokenExpiration;
+    }
+
     public long getRemainingTime(String token) {
         Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
         return claims.getExpiration().getTime() - System.currentTimeMillis();
