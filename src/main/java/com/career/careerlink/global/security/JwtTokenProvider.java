@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -19,17 +20,19 @@ public class JwtTokenProvider {
     private final long accessTokenExpiration = 1000 * 60 * 15; // 15분
     private final long refreshTokenExpiration = 1000L * 60 * 60 * 24 * 14; // 14일
 
-    public String createAccessToken(String userId) {
+    public String createAccessToken(String userId, String role) {
         return Jwts.builder()
                 .setSubject(userId)
+                .claim("role", role)
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
-    public String createRefreshToken(String userId) {
+    public String createRefreshToken(String userId, String role) {
         return Jwts.builder()
                 .setSubject(userId)
+                .claim("role", role)
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
@@ -51,6 +54,13 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
+    public String getRole(String token) {
+        Claims claims = Jwts.parser().setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("role", String.class); // 👈 role 추출
+    }
+
     public long getRefreshTokenExpiration() {
         return refreshTokenExpiration;
     }
@@ -62,6 +72,9 @@ public class JwtTokenProvider {
 
     public Authentication getAuthentication(String token) {
         String userId = getUserId(token);
-        return new UsernamePasswordAuthenticationToken(userId, "", List.of());
+        String role = getRole(token); // 👈 토큰에서 role 추출
+
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role); // 예: ROLE_ADMIN
+        return new UsernamePasswordAuthenticationToken(userId, "", List.of(authority));
     }
 }

@@ -1,10 +1,14 @@
 package com.career.careerlink.users.service.impl;
 
+import com.career.careerlink.admin.repository.AdminRepository;
+import com.career.careerlink.employers.repository.EmployerUserRepository;
 import com.career.careerlink.users.dto.LoginRequestDto;
 import com.career.careerlink.users.dto.SignupRequestDto;
 import com.career.careerlink.users.dto.TokenRequestDto;
 import com.career.careerlink.users.dto.TokenResponse;
-import com.career.careerlink.users.entity.applicants;
+import com.career.careerlink.users.entity.LoginUser;
+import com.career.careerlink.users.entity.Applicant;
+import com.career.careerlink.users.repository.LoginUserRepository;
 import com.career.careerlink.users.repository.UserRepository;
 import com.career.careerlink.users.service.UserService;
 import com.career.careerlink.global.redis.RedisUtil;
@@ -23,6 +27,9 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final LoginUserRepository loginUserRepository;
+    private final EmployerUserRepository employerUserRepository;
+    private final AdminRepository adminRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
@@ -37,7 +44,7 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = passwordEncoder.encode(dto.getPasswordHash());
         String generatedUserId = UserIdGenerator.generate("USR");
 
-        applicants newApplicants = applicants.builder()
+        Applicant newApplicant = Applicant.builder()
                 .userId(generatedUserId)
                 .loginId(dto.getLoginId())
                 .password(encodedPassword)
@@ -59,20 +66,20 @@ public class UserServiceImpl implements UserService {
                 .updatedAt(dto.getUpdatedAt())
                 .build();
 
-        userRepository.save(newApplicants);
+        userRepository.save(newApplicant);
     }
 
     @Override
     public TokenResponse login(LoginRequestDto dto, HttpServletResponse response) {
-        applicants applicants = userRepository.findByLoginId(dto.getLoginId())
+        LoginUser user = loginUserRepository.findByLoginId(dto.getLoginId())
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-        if (!passwordEncoder.matches(dto.getPassword(), applicants.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new RuntimeException("비밀번호 불일치");
         }
 
-        String accessToken = jwtTokenProvider.createAccessToken(applicants.getUserId().toString());
-        String refreshToken = jwtTokenProvider.createRefreshToken(applicants.getUserId().toString());
+        String accessToken = jwtTokenProvider.createAccessToken(user.getUserPk(), user.getRole());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserPk(), user.getRole());
         long expiresIn = jwtTokenProvider.getRemainingTime(accessToken);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -85,10 +92,31 @@ public class UserServiceImpl implements UserService {
 
         response.setHeader("Set-Cookie", refreshCookie.toString());
 
-        redisUtil.set("refresh:" + applicants.getUserId(), refreshToken, jwtTokenProvider.getRefreshTokenExpiration());
+        redisUtil.set("refresh:" + user.getUserPk(), refreshToken, jwtTokenProvider.getRefreshTokenExpiration());
 
-        applicants.setLastLoginAt(LocalDateTime.now());
-
+        switch (user.getRole()) {
+            case "USER" -> {
+                userRepository.findById(user.getLoginId())
+                        .ifPresent(applicant -> {
+                            applicant.setLastLoginAt(LocalDateTime.now());
+                            userRepository.save(applicant);
+                        });
+            }
+            case "EMP" -> {
+                employerUserRepository.findById(user.getLoginId())
+                        .ifPresent(employerUser -> {
+                            employerUser.setLastLoginAt(LocalDateTime.now());
+                            employerUserRepository.save(employerUser);
+                        });
+            }
+            case "ADMIN" -> {
+                adminRepository.findById(user.getLoginId())
+                        .ifPresent(adminUser -> {
+                            adminUser.setLastLoginAt(LocalDateTime.now());
+                            adminRepository.save(adminUser);
+                        });
+            }
+        }
         return new TokenResponse(accessToken, refreshToken, expiresIn);
     }
 
@@ -99,14 +127,15 @@ public class UserServiceImpl implements UserService {
         }
 
         String userId = jwtTokenProvider.getUserId(dto.getRefreshToken());
+        String role = jwtTokenProvider.getRole(dto.getRefreshToken());
         String redisRefresh = redisUtil.get("refresh:" + userId);
 
         if (!dto.getRefreshToken().equals(redisRefresh)) {
             throw new RuntimeException("불일치 리프레시 토큰");
         }
 
-        String newAccessToken = jwtTokenProvider.createAccessToken(userId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
+        String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId, role);
         long expiresIn = jwtTokenProvider.getRemainingTime(newAccessToken);
 
         redisUtil.set("refresh:" + userId, newRefreshToken, jwtTokenProvider.getRefreshTokenExpiration());

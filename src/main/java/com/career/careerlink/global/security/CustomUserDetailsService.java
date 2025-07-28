@@ -1,6 +1,7 @@
 package com.career.careerlink.global.security;
 
-import com.career.careerlink.users.entity.applicants;
+import com.career.careerlink.users.entity.LoginUser;
+import com.career.careerlink.users.repository.LoginUserRepository;
 import com.career.careerlink.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,17 +13,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final LoginUserRepository loginUserRepository;
 
     @Override
     public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
-        applicants applicants = userRepository.findByLoginId(loginId)
+        LoginUser user = loginUserRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + loginId));
 
         return org.springframework.security.core.userdetails.User.builder()
-                .username(String.valueOf(applicants.getUserId()))
-                .password(applicants.getPassword())
-                .roles("USER") // 권한 설정
+                .username(user.getLoginId())
+                .password(user.getPassword())
+                .roles(user.getRole())
                 .build();
     }
 }

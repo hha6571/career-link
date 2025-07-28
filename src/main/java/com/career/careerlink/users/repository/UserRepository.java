@@ -1,10 +1,8 @@
 package com.career.careerlink.users.repository;
 
-import com.career.careerlink.users.entity.applicants;
+import com.career.careerlink.users.entity.Applicant;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<applicants, Long> {
+public interface UserRepository extends JpaRepository<Applicant, String> {
     boolean existsByLoginId(String loginId);
-    Optional<applicants> findByLoginId(String loginId);
 }
