@@ -81,4 +81,17 @@ public class JwtTokenProvider {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role); // 예: ROLE_ADMIN
         return new UsernamePasswordAuthenticationToken(userId, "", List.of(authority));
     }
+
+    // 기업 승인 메일 유효시간
+    public String createEmployerSignupToken(String employerId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // 3일
+
+        return Jwts.builder()
+                .setSubject(employerId)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, secretKey)
+                .compact();
+    }
 }

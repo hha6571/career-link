@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class applicants {
+public class Applicant {
     @Id
     @Column(name = "user_id")
     private String userId;

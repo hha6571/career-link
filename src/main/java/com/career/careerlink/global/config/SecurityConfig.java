@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/check-id","/api/users/signup", "/api/users/login", "/api/employers/check-bizRegNo", "/api/employers/registration-requests").permitAll()
+                        .requestMatchers("/api/users/check-id","/api/users/signup", "/api/users/login", "/emp/check-bizRegNo", "/emp/registration-requests", "/emp/info").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
