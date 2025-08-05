@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isLoginIdDuplicate(String loginId) {
-        return userRepository.existsByLoginId(loginId);
+        return loginUserRepository.existsByLoginId(loginId);
     }
 
     @Override
@@ -91,6 +91,16 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         response.setHeader("Set-Cookie", refreshCookie.toString());
+
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(false) // 운영에선 true
+                .path("/")
+                .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader("Set-Cookie", accessCookie.toString());
 
         redisUtil.set("refresh:" + user.getUserPk(), refreshToken, jwtTokenProvider.getRefreshTokenExpiration());
 
