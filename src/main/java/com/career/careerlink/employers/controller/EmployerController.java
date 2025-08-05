@@ -1,11 +1,14 @@
 package com.career.careerlink.employers.controller;
 
 import com.career.careerlink.employers.dto.EmployerInfomationDto;
+import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.employers.service.EmployerService;
 import com.career.careerlink.employers.dto.EmployerRegistrationDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -24,9 +27,9 @@ public class EmployerController {
     }
 
     // 기업등록요청
-    @PostMapping("/registration-requests")
-    public ResponseEntity<Void> companyRegistrationRequest(@RequestBody EmployerRegistrationDto dto) {
-        employerService.companyRegistrationRequest(dto);
+    @PostMapping(value = "/registration-requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> companyRegistrationRequest(@RequestPart("dto") EmployerRegistrationDto dto, @RequestPart("file") MultipartFile file) {
+        employerService.companyRegistrationRequest(dto, file);
         return ResponseEntity.ok().build();
     }
 
@@ -34,5 +37,16 @@ public class EmployerController {
     @GetMapping("/info")
     public EmployerInfomationDto getCompanyInfomation(@RequestParam String employerId) {
         return employerService.getCompanyInfomation(employerId);
+    }
+
+    //기업정보 저장
+    @PutMapping("/info/save")
+    public ResponseEntity<?> saveEmployerInfo(
+            @ModelAttribute EmployerInfomationDto dto
+            //@RequestPart(value = "companyLogo", required = false) MultipartFile companyLogo
+    ) {
+
+        employerService.saveEmployerInfo(dto);
+        return ResponseEntity.ok("기업 정보 저장 완료");
     }
 }

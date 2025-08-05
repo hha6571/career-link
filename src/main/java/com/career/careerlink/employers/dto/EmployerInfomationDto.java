@@ -13,9 +13,12 @@ public class EmployerInfomationDto {
     private String companyName;
     private String bizRegNo;
     private String bizRegistrationUrl;
+    private String ceoName;
     private String companyPhone;
     private String companyEmail;
-    private String companyAddress;
+    private String baseAddress;
+    private String detailAddress;
+    private String postcode;
     private LocalDate establishedDate;
     private String industryCode;
     private String companyIntro;

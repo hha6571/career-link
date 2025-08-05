@@ -47,8 +47,14 @@ public class Employer {
     @Column(name = "company_email")
     private String companyEmail;
 
-    @Column(name = "company_address")
-    private String companyAddress;
+    @Column(name = "base_address")
+    private String baseAddress;
+
+    @Column(name = "detail_address")
+    private String detailAddress;
+
+    @Column(name = "postcode")
+    private String postcode;
 
     @Column(name = "established_date")
     private LocalDate establishedDate;
