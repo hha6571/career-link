@@ -65,6 +65,7 @@ public class AdminServiceImpl implements AdminService {
                 .employerId(employer.getEmployerId())
                 .companyName(employer.getCompanyName())
                 .bizRegNo(employer.getBizRegNo())
+                .bizRegistrationUrl(employer.getBizRegistrationUrl())
                 .companyEmail(employer.getCompanyEmail())
                 .createdAt(employer.getCreatedAt())
                 .isApproved(employer.getIsApproved())

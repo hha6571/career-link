@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isLoginIdDuplicate(String loginId) {
-        return userRepository.existsByLoginId(loginId);
+        return loginUserRepository.existsByLoginId(loginId);
     }
 
     @Override

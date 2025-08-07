@@ -14,6 +14,7 @@ public class AdminEmployerRequestDto {
     private String employerId;
     private String companyName;
     private String bizRegNo;
+    private String bizRegistrationUrl;
     private String companyEmail;
     private LocalDateTime createdAt;
     private AgreementStatus isApproved;
