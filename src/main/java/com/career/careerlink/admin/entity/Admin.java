@@ -35,12 +35,14 @@ public class Admin {
     private String phoneNumber;
 
     @Column(name = "role")
+    @Enumerated(EnumType.STRING)
     private AdminRole role;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
     @Column(name = "admin_status")
+    @Enumerated(EnumType.STRING)
     private UserStatus adminStatus;
 
     @Column(name = "created_at", nullable = false)

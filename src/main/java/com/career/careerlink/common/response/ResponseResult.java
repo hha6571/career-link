@@ -1,13 +1,14 @@
 package com.career.careerlink.common.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-//전체 응답 구조 ( header + body + pagination )
-public class ResponseResult {
-    private ResponseResultHeader header; // 응답상태 정보(status + message)
-    private Object body; // 데이터 정보
-    private PaginationInfo pagination; // 선택적 정보
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ResponseResult<T> {
+    private ResponseResultHeader header; // 상태/메시지/코드
+    private T body;                      // 데이터
+    private PaginationInfo pagination;   // DataGrid 페이징(선택)
 }

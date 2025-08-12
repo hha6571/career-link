@@ -2,21 +2,23 @@ package com.career.careerlink.global.util;
 
 import com.career.careerlink.common.response.PaginationInfo;
 
-public class PaginationUtil {
+public final class PaginationUtil {
+    private PaginationUtil() {}
 
-    public static PaginationInfo from(int page, int size, int totalElements) {
-        int totalPages = (int) Math.ceil((double) totalElements / size);
-        boolean hasNext = page < totalPages;
-        boolean hasPrevious = page > 1;
+    public static PaginationInfo of(int page /*0-based*/, int size, long totalElements) {
+        int totalPages = (int) Math.ceil((double) totalElements / Math.max(size, 1));
+        boolean hasPrevious = page > 0;
+        boolean hasNext = page + 1 < totalPages;
 
         return PaginationInfo.builder()
-                .page(page)
+                .page(page)               // 0-based로 그대로
                 .size(size)
                 .totalPages(totalPages)
                 .totalElements(totalElements)
-                .hasNext(hasNext)
                 .hasPrevious(hasPrevious)
+                .hasNext(hasNext)
                 .build();
     }
 }
+
 
