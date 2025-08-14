@@ -12,5 +12,6 @@ public interface UserService {
     TokenResponse reissue(TokenRequestDto dto, HttpServletResponse response);
     void logout(String accessToken);
     void signup(SignupRequestDto dto);
+    void resetPassword(String resetToken, String newPassword);
 }
 

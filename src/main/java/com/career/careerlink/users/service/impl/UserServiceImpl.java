@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.redis.core.RedisTemplate;
 import com.career.careerlink.global.util.UserIdGenerator;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public boolean isLoginIdDuplicate(String loginId) {
@@ -50,8 +52,6 @@ public class UserServiceImpl implements UserService {
                 .userId(generatedUserId)
                 .loginId(dto.getLoginId())
                 .password(encodedPassword)
-                .socialType(dto.getSocialType())
-                .socialLoingId(dto.getSocialLoingId())
                 .userName(dto.getUserName())
                 .phoneNumber(dto.getPhoneNumber())
                 .birthDate(dto.getBirthDate())
@@ -221,5 +221,29 @@ public class UserServiceImpl implements UserService {
         long remainTime = jwtTokenProvider.getRemainingTime(token);
         redisUtil.set("blacklist:" + token, "logout", remainTime);
     System.out.println("==================로그아웃처리 완료 ===========");
+    }
+
+    /**
+     * 비밀번호 재설정
+     * @param resetToken
+     * @param newPassword
+     */
+    @Override
+    public void resetPassword(String resetToken, String newPassword) {
+        String userIdStr = redisTemplate.opsForValue().get("resetPwdToken:" + resetToken);
+        if (userIdStr == null) {
+            throw new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "비밀번호 재설정 토큰이 유효하지 않거나 만료되었습니다.");
+        }
+
+        Applicant applicant = userRepository.findByUserId(userIdStr)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "회원 정보를 찾을 수 없습니다."));
+
+        // 비밀번호 암호화 후 저장
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        applicant.setPassword(encodedPassword);
+        userRepository.save(applicant);
+
+        // 토큰 삭제 (1회 사용 원칙)
+        redisTemplate.delete("resetPwdToken:" + resetToken);
     }
 }

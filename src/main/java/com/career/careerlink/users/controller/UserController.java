@@ -1,9 +1,7 @@
 package com.career.careerlink.users.controller;
 
-import com.career.careerlink.users.dto.LoginRequestDto;
-import com.career.careerlink.users.dto.SignupRequestDto;
-import com.career.careerlink.users.dto.TokenRequestDto;
-import com.career.careerlink.users.dto.TokenResponse;
+import com.career.careerlink.common.mail.UserVerificationService;
+import com.career.careerlink.users.dto.*;
 import com.career.careerlink.users.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +19,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserVerificationService userVerificationService;
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping("/check-id")
@@ -96,5 +95,55 @@ public class UserController {
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
         userService.logout(token);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 아이디 찾기 인증번호 발송
+     * @param request
+     */
+    @PostMapping("/send-id-code")
+    public void sendIdCode(@RequestBody IdVerificationRequest request) {
+        userVerificationService.sendIdVerificationCode(request.userName(), request.email());
+    }
+
+    /**
+     * 아이디 찾기 인증번호 검증
+     * @param request
+     * @return verifyCode
+     */
+    @PostMapping("/verify-id-code")
+    public Map<String, String> verifyIdCode(@RequestBody VerifyIdCodeRequest request) {
+        return userVerificationService.verifyIdCode(request.userName(), request.email(), request.code());
+    }
+
+    /**
+     * 비밀번호 찾기 인증번호 발송
+     * @param request
+     */
+    @PostMapping("/send-pwd-code")
+    public void sendPwdCode(@RequestBody PwdVerificationRequest request) {
+       userVerificationService.sendPwdVerificationCode(request.userName(), request.email(), request.loginId());
+    }
+
+    /**
+     * 비밀번호 찾기 인증번호 검증
+     * @param request
+     * @return 비밀번호 재설정을 위한 resetToken
+     */
+    @PostMapping("/verify-pwd-code")
+    public Map<String, String> verifyPwdCode(@RequestBody VerifyPwdCodeRequest request) {
+        String tempToken = userVerificationService.verifyPwdCode(
+                request.userName(), request.email(), request.loginId(), request.code()
+        );
+        return Map.of("resetToken", tempToken);
+    }
+
+    /**
+     * 비빌번호 재설정
+     * @param request resetToken, newPassword
+     */
+    @PostMapping("/reset-password")
+    public void resetPassword(@RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request.resetToken(), request.newPassword());
     }
 }

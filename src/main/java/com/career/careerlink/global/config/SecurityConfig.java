@@ -35,11 +35,27 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        String[] permitAllUrls = {
+                "/api/users/check-id",
+                "/api/users/signup",
+                "/api/users/login",
+                "/emp/check-bizRegNo",
+                "/emp/registration-requests",
+                "/emp/info",
+                "/emp/info/save",
+                "/oauth/social/login",
+                "/api/users/send-id-code",
+                "/api/users/verify-id-code",
+                "/api/users/send-pwd-code",
+                "/api/users/verify-pwd-code",
+                "/api/users/reset-password"
+        };
+
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/check-id","/api/users/signup", "/api/users/login", "/emp/check-bizRegNo", "/emp/registration-requests", "/emp/info", "/emp/info/save").permitAll()
+                        .requestMatchers(permitAllUrls).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
