@@ -76,7 +76,7 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
         Object actualBody = body;
         if (body instanceof Page<?> page) {
             pagination = PaginationInfo.builder()
-                    .page(page.getNumber() + 1) // 팀 규칙 1-based면 유지
+                    .page(page.getNumber()) // 0-based면 유지
                     .size(page.getSize())
                     .totalPages(page.getTotalPages())
                     .totalElements(page.getTotalElements())
