@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.career.careerlink.admin.mapper.CommonCodeMapper">
+
+    <select id="getCommonCodes" resultType="map">
+        SELECT code, code_name AS codeName
+        FROM common_codes
+        WHERE group_code = #{groupCode}
+          AND use_yn = 'Y'
+          AND parent_code IS NOT NULL
+        ORDER BY sort_order
+    </select>
+
+    <select id="parentCodesCount" resultType="long" >
+        SELECT COUNT(*)
+        FROM common_codes
+        WHERE
+            parent_code IS NULL
+            <if test="keyword != null and !keyword.equals('')">
+                AND (
+                group_code LIKE CONCAT('%', #{keyword}, '%')
+                OR code LIKE CONCAT('%', #{keyword}, '%')
+                OR code_name LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+    </select>
+
+    <!-- 목록 (offset/limit) -->
+    <select id="parentCodes" resultType="com.career.careerlink.admin.dto.CommonCodeDto">
+        SELECT
+        CONCAT('P:', group_code, '::', code) AS id,
+        group_code  AS groupCode,
+        code        AS code,
+        code_name   AS codeName,
+        parent_code AS parentCode,
+        sort_order  AS sortOrder,
+        level       AS level,
+        use_yn      AS useYn
+        FROM common_codes
+        WHERE
+        parent_code IS NULL
+            <if test="req.keyword != null and !req.keyword.equals('')">
+                AND (
+                group_code LIKE CONCAT('%', #{req.keyword}, '%')
+                OR code LIKE CONCAT('%', #{req.keyword}, '%')
+                OR code_name LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+
+        <!-- 정렬: 화이트리스트 매핑 -->
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'groupCode'"> group_code </when>
+            <when test="req.sort == 'code'"> code </when>
+            <when test="req.sort == 'codeName'"> code_name </when>
+            <when test="req.sort == 'useYn'"> use_yn </when>
+            <otherwise> sort_order </otherwise>
+        </choose>
+        <choose>
+            <when test="req.direction == 'desc' or req.direction == 'DESC'"> DESC </when>
+            <otherwise> ASC </otherwise>
+        </choose>
+
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="childCodesCount" resultType="long" >
+        SELECT COUNT(*)
+        FROM common_codes
+        WHERE
+            parent_code = #{parentCode}
+        AND group_code = #{groupCode}
+    </select>
+
+    <select id="childCodes" resultType="com.career.careerlink.admin.dto.CommonCodeDto">
+        SELECT
+        CONCAT('C:', group_code, '::', parent_code, '::', code) AS id,
+        group_code  AS groupCode,
+        code        AS code,
+        code_name   AS codeName,
+        parent_code AS parentCode,
+        sort_order  AS sortOrder,
+        level       AS level,
+        use_yn      AS useYn
+        FROM common_codes
+        WHERE
+        group_code = #{req.groupCode}
+        <if test ="req.parentCode !=null and  !req.parentCode.equals('')">
+         AND  parent_code = #{req.parentCode}
+        </if>
+        <!-- 정렬: 화이트리스트 매핑 -->
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'code'"> code </when>
+            <when test="req.sort == 'codeName'"> code_name </when>
+            <when test="req.sort == 'useYn'"> use_yn </when>
+            <otherwise> sort_order </otherwise>
+        </choose>
+        <choose>
+            <when test="req.direction == 'desc' or req.direction == 'DESC'"> DESC </when>
+            <otherwise> ASC </otherwise>
+        </choose>
+
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 자식 삭제 -->
+    <delete id="deleteChildren">
+        DELETE FROM common_codes
+        <where>
+            <foreach collection="list" item="r" separator=" OR ">
+                (group_code = #{r.groupCode} AND parent_code = #{r.parentCode} AND code = #{r.code})
+            </foreach>
+        </where>
+    </delete>
+
+    <delete id="deleteParents">
+        DELETE FROM common_codes
+        <where>
+        <if test="list != null and list.size() > 0">
+             (
+            <foreach collection="list" item="r" separator=" OR ">
+                (group_code = #{r.groupCode} AND code = #{r.code})
+            </foreach>
+            )
+        </if>
+        </where>
+    </delete>
+
+    <insert id="insertParents">
+        INSERT IGNORE INTO common_codes
+        (group_code, code, code_name, parent_code, sort_order, level, use_yn)
+        VALUES
+        <foreach collection="list" item="r" separator=",">
+            (#{r.groupCode}, #{r.code}, #{r.codeName}, NULL, #{r.sortOrder}, #{r.level}, #{r.useYn})
+        </foreach>
+    </insert>
+
+    <insert id="insertChildren">
+        INSERT IGNORE INTO common_codes
+        (group_code, code, code_name, parent_code, sort_order, level, use_yn)
+        VALUES
+        <foreach collection="list" item="r" separator=",">
+            (#{r.groupCode}, #{r.code}, #{r.codeName}, #{r.parentCode}, #{r.sortOrder}, #{r.level}, #{r.useYn})
+        </foreach>
+    </insert>
+
+    <update id="updateParents">
+        UPDATE common_codes
+        SET
+        code = #{code},
+        code_name = #{codeName},
+        sort_order = #{sortOrder},
+        level      = #{level},
+        use_yn     = #{useYn}
+        WHERE group_code = #{groupCode}
+        AND parent_code IS NULL
+    </update>
+
+    <update id="updateChildren">
+        UPDATE common_codes
+        SET code_name = #{codeName},
+        sort_order = #{sortOrder},
+        level      = #{level},
+        use_yn     = #{useYn}
+        WHERE group_code = #{groupCode}
+        AND parent_code= #{parentCode}
+        AND code       = #{code}
+    </update>
+
+</mapper>

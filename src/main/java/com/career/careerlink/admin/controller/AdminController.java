@@ -1,9 +1,9 @@
 package com.career.careerlink.admin.controller;
 
-import com.career.careerlink.admin.dto.AdminEmployerRequestDto;
-import com.career.careerlink.admin.dto.MenuDto;
+import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.service.AdminService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,5 +28,24 @@ public class AdminController {
     @GetMapping("/menu")
     public List<MenuDto> getAllMenus() {
         return adminService.getAllMenus();
+    }
+
+    @GetMapping("/getCommonCodes")
+    public List<CommonCodeDto> getCommonCodes(@RequestParam String groupCode) {
+        return adminService.getCommonCodes(groupCode);
+    }
+
+    @GetMapping("/getParentCodes")
+    public Page<CommonCodeDto> getParentCodes(@ModelAttribute CommonCodeSearchRequest req) {
+        return adminService.getParentCodes(req);
+    }
+
+    @GetMapping("/getChildCodes")
+    public Page<CommonCodeDto> getChildCodes(@ModelAttribute CommonCodeSearchRequest req) {
+        return adminService.getChildCodes(req);
+    }
+    @PostMapping("/saveCommonCodes")
+    public void saveCommonCodes(@RequestBody CommonCodeSaveDto saveDto) {
+        adminService.saveCommonCodes(saveDto);
     }
 }

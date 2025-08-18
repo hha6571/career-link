@@ -1,8 +1,8 @@
 package com.career.careerlink.admin.service.impl;
 
-import com.career.careerlink.admin.dto.AdminEmployerRequestDto;
-import com.career.careerlink.admin.dto.MenuDto;
+import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.entity.Menu;
+import com.career.careerlink.admin.mapper.CommonCodeMapper;
 import com.career.careerlink.admin.repository.AdminRepository;
 import com.career.careerlink.admin.repository.MenuRepository;
 import com.career.careerlink.admin.service.AdminService;
@@ -14,11 +14,13 @@ import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.global.security.JwtTokenProvider;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final MailService mailService;
     private final JwtTokenProvider jwtTokenProvider;
     private final MenuRepository menuRepository;
+    private final CommonCodeMapper commonCodeMapper;
 
     @Override
     public List<AdminEmployerRequestDto> getAllEmployersWithFilter(AdminEmployerRequestDto searchRequest) {
@@ -97,5 +100,71 @@ public class AdminServiceImpl implements AdminService {
         }
         return MenuDto.listOf(menus);
     }
-}
 
+    @Override
+    public List<CommonCodeDto> getCommonCodes(String groupCode) {
+        return commonCodeMapper.getCommonCodes(groupCode);
+    }
+
+    @Override
+    public Page<CommonCodeDto> getParentCodes(CommonCodeSearchRequest req) {
+        int page = Optional.ofNullable(req.getPage()).orElse(0);
+        int size = Optional.ofNullable(req.getSize()).orElse(10);
+
+        // 0-based page → offset
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        int offset = safePage * safeSize;
+
+        long total = commonCodeMapper.parentCodesCount(req);
+        List<CommonCodeDto> rows = commonCodeMapper.parentCodes(req, offset, safeSize);
+
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize), total);
+    }
+
+    @Override
+    public Page<CommonCodeDto> getChildCodes(CommonCodeSearchRequest req) {
+        int page = Optional.ofNullable(req.getPage()).orElse(0);
+        int size = Optional.ofNullable(req.getSize()).orElse(10);
+
+        // 0-based page → offset
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        int offset = safePage * safeSize;
+
+        long total = commonCodeMapper.childCodesCount(req);
+        List<CommonCodeDto> rows = commonCodeMapper.childCodes(req, offset, safeSize);
+
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize), total);
+        //(실제데이터,페이지정보,전체데이터수) => 이 세가지 정보로 페이징 정보 자동생성 Spring Data 클래스
+    }
+
+    @Override
+    public void saveCommonCodes(CommonCodeSaveDto saveDto) {
+        var pI = nvl(saveDto.getParentInserts());
+        var pU = nvl(saveDto.getParentUpdates());
+        var pD = nvl(saveDto.getParentDeletes());
+        var cI = nvl(saveDto.getChildInserts());
+        var cU = nvl(saveDto.getChildUpdates());
+        var cD = nvl(saveDto.getChildDeletes());
+
+        // 1) 삭제: 자식 → 부모
+        if (!cD.isEmpty()) commonCodeMapper.deleteChildren(cD);
+        if (!pD.isEmpty()) commonCodeMapper.deleteParents(pD);
+
+        // 2) 삽입: 부모 → 자식
+        if (!pI.isEmpty()) commonCodeMapper.insertParents(pI);
+        if (!cI.isEmpty()) commonCodeMapper.insertChildren(cI);
+
+        // 3) 수정: 부모 → 자식 (단건씩)
+        if (!pU.isEmpty()) {
+            for (var dto : pU) commonCodeMapper.updateParents(dto);
+
+        }
+        if (!cU.isEmpty()) {
+            for (var dto : cU) commonCodeMapper.updateChildren(dto);
+        }
+    }
+    private static <T> List<T> nvl(List<T> v) { return v == null ? List.of() : v; }
+
+}
