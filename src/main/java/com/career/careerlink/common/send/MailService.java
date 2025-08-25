@@ -1,4 +1,4 @@
-package com.career.careerlink.common.mail;
+package com.career.careerlink.common.send;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

@@ -7,7 +7,7 @@ import com.career.careerlink.admin.repository.AdminRepository;
 import com.career.careerlink.admin.repository.MenuRepository;
 import com.career.careerlink.admin.service.AdminService;
 import com.career.careerlink.admin.spec.EmployerSpecification;
-import com.career.careerlink.common.mail.MailService;
+import com.career.careerlink.common.send.MailService;
 import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.employers.repository.EmployerRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
@@ -81,7 +81,7 @@ public class AdminServiceImpl implements AdminService {
 
     private void sendApprovalEmail(Employer employer) {
         String toEmail = employer.getCompanyEmail();
-        String subject = "기업 승인 완료 안내";
+        String subject = "[CareerLinl] 기업 승인 완료 안내";
         String url = "http://localhost:3000/emp/info?employerId=" + employer.getEmployerId(); // 운영시 https로 변경
 
         Context context = new Context();

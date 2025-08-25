@@ -48,7 +48,13 @@ public class SecurityConfig {
                 "/api/users/verify-id-code",
                 "/api/users/send-pwd-code",
                 "/api/users/verify-pwd-code",
-                "/api/users/reset-password"
+                "/api/users/reset-password",
+                "/api/users/send-sms",
+                "/api/users/verify-phone-code"
+                ,"/api/users/send-email-code"
+                ,"/api/users/verify-email-code"
+                ,"/emp/info/logo"
+                ,"/emp/signup"
         };
 
         http

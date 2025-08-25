@@ -1,15 +1,14 @@
 package com.career.careerlink.users.controller;
 
-import com.career.careerlink.common.mail.UserVerificationService;
+import com.career.careerlink.common.send.UserVerificationService;
+import com.career.careerlink.global.response.SkipWrap;
 import com.career.careerlink.users.dto.*;
 import com.career.careerlink.users.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import net.nurigo.sdk.message.response.SingleMessageSentResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -20,12 +19,54 @@ public class UserController {
 
     private final UserService userService;
     private final UserVerificationService userVerificationService;
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
+    @SkipWrap
     @GetMapping("/check-id")
-    public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
+    public Map<String, Boolean> checkLoginId(@RequestParam String loginId) {
         boolean exists = userService.isLoginIdDuplicate(loginId);
-        return ResponseEntity.ok(Map.of("exists", exists));
+        return Map.of("exists", exists);
+    }
+
+    /**
+     * 회원가입시 휴대폰 인증번호 발송
+     * @param request
+     * @return
+     */
+    @SkipWrap
+    @PostMapping("/send-sms")
+    public SingleMessageSentResponse sendSms(@RequestBody PhoneVerifyRequest request) {
+        return userVerificationService.certificateSMS(request.phoneNumber());
+    }
+
+    /**
+     * 회원가입시 휴대폰 인증번호 검증
+     * @param request
+     * @return verifyCode
+     */
+    @SkipWrap
+    @PostMapping("/verify-phone-code")
+    public boolean verifyPhoneCode(@RequestBody VerifyPhoneCodeRequest request) {
+        return userVerificationService.verifyPhoneCode(request.phoneNumber(), request.code());
+    }
+
+    /**
+     * 회원가입 이메일 인증번호 발송
+     * @param request
+     */
+    @PostMapping("/send-email-code")
+    public void sendEmailCode(@RequestBody BasicVerificationRequest request) {
+        userVerificationService.sendEmailVerification(request.userName(), request.email());
+    }
+
+    /**
+     * 회원가입 이메일 인증번호 검증
+     * @param request
+     * @return verifyCode
+     */
+    @SkipWrap
+    @PostMapping("/verify-email-code")
+    public boolean verifyEmailCode(@RequestBody BasicVerifyCodeRequest request) {
+        return userVerificationService.verifyEmailCode(request.userName(), request.email(), request.code());
     }
 
     @PostMapping("/signup")
@@ -102,7 +143,7 @@ public class UserController {
      * @param request
      */
     @PostMapping("/send-id-code")
-    public void sendIdCode(@RequestBody IdVerificationRequest request) {
+    public void sendIdCode(@RequestBody BasicVerificationRequest request) {
         userVerificationService.sendIdVerificationCode(request.userName(), request.email());
     }
 
@@ -112,7 +153,7 @@ public class UserController {
      * @return verifyCode
      */
     @PostMapping("/verify-id-code")
-    public Map<String, String> verifyIdCode(@RequestBody VerifyIdCodeRequest request) {
+    public Map<String, String> verifyIdCode(@RequestBody BasicVerifyCodeRequest request) {
         return userVerificationService.verifyIdCode(request.userName(), request.email(), request.code());
     }
 
