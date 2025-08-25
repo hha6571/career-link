@@ -34,6 +34,16 @@ public class S3Service {
         return s3Template.download(bucket, key);
     }
 
+    public void deleteFileByUrl(String url) {
+        String prefix = "https://" + bucket + ".s3.amazonaws.com/";
+        if (url != null && url.startsWith(prefix)) {
+            String key = url.substring(prefix.length());
+            deleteFile(key);
+        } else {
+            throw new IllegalArgumentException("잘못된 S3 URL: " + url);
+        }
+    }
+
     public void deleteFile(String key) {
         s3Template.deleteObject(bucket, key);
     }

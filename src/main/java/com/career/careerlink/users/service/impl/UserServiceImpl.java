@@ -150,21 +150,21 @@ public class UserServiceImpl implements UserService {
 
         switch (user.getRole()) {
             case "USER" -> {
-                userRepository.findById(user.getLoginId())
+                userRepository.findById(user.getUserPk())
                         .ifPresent(applicant -> {
                             applicant.setLastLoginAt(LocalDateTime.now());
                             userRepository.save(applicant);
                         });
             }
             case "EMP" -> {
-                employerUserRepository.findById(user.getLoginId())
+                employerUserRepository.findById(user.getUserPk())
                         .ifPresent(employerUser -> {
                             employerUser.setLastLoginAt(LocalDateTime.now());
                             employerUserRepository.save(employerUser);
                         });
             }
             case "ADMIN" -> {
-                adminRepository.findById(user.getLoginId())
+                adminRepository.findById(user.getUserPk())
                         .ifPresent(adminUser -> {
                             adminUser.setLastLoginAt(LocalDateTime.now());
                             adminRepository.save(adminUser);

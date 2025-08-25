@@ -18,4 +18,8 @@ public class LoginUser {
     private String role;
 
     private String userPk;
+
+    private String userName;
+
+    private String email;
 }
