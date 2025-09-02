@@ -1,17 +1,23 @@
 package com.career.careerlink.employers.service;
 
-import com.career.careerlink.employers.dto.EmployerInformationDto;
-import com.career.careerlink.employers.dto.EmployerRegistrationDto;
-import com.career.careerlink.employers.dto.EmployerSignupDto;
+import com.career.careerlink.employers.dto.*;
 import com.career.careerlink.employers.entity.Employer;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface EmployerService {
     boolean isCompanyDuplicate(String bizRegNo);
     void companyRegistrationRequest(@RequestPart("dto") EmployerRegistrationDto dto, @RequestPart("file") MultipartFile file);
-    EmployerInformationDto getCompanyInformation(String employerId);
-    Employer saveEmployerInfo(EmployerInformationDto dto, MultipartFile companyLogo);
     void empSignup(EmployerSignupDto dto);
+    EmployerInformationDto getCompanyInformation();
+    Employer saveEmployerInfo(EmployerInformationDto dto, MultipartFile companyLogo);
+    void deleteCompanyLogo();
+    Page<EmployerMemberDto> getEmployerMembers(EmployerMemberSearchRequest req, String employerUserId);
+    int approveOne(@NotBlank String targetEmployerUserId, @NotBlank String employerUserId);
 }
 

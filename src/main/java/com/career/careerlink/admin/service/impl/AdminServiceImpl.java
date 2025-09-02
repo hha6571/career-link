@@ -82,7 +82,7 @@ public class AdminServiceImpl implements AdminService {
     private void sendApprovalEmail(Employer employer) {
         String toEmail = employer.getCompanyEmail();
         String subject = "[CareerLinl] 기업 승인 완료 안내";
-        String url = "http://localhost:3000/emp/info?employerId=" + employer.getEmployerId(); // 운영시 https로 변경
+        String url = "http://localhost:3000/emp/signup?employerId=" + employer.getEmployerId(); // 운영시 https로 변경
 
         Context context = new Context();
         context.setVariable("companyName", employer.getCompanyName());

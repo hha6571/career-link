@@ -41,8 +41,6 @@ public class SecurityConfig {
                 "/api/users/login",
                 "/emp/check-bizRegNo",
                 "/emp/registration-requests",
-                "/emp/info",
-                "/emp/info/save",
                 "/oauth/social/login",
                 "/api/users/send-id-code",
                 "/api/users/verify-id-code",
@@ -53,7 +51,6 @@ public class SecurityConfig {
                 "/api/users/verify-phone-code"
                 ,"/api/users/send-email-code"
                 ,"/api/users/verify-email-code"
-                ,"/emp/info/logo"
                 ,"/emp/signup"
         };
 

@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = "employerUserId")
-public class EmployerUser {
+public class EmployerUsers {
 
     @Id
     @Column(name = "employer_user_id", length = 20, nullable = false)
@@ -66,7 +66,7 @@ public class EmployerUser {
     @ColumnDefault("'N'")
     private AgreementStatus isApproved;
 
-    @Column(name = "joined_at")
+    @Column(name = "approved_at")
     private LocalDateTime joinedAt;
 
     @Column(name = "last_login_at")
