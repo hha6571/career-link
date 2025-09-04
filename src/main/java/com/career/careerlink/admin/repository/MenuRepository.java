@@ -11,4 +11,5 @@ import java.util.Set;
 
 @Repository
 public interface MenuRepository extends JpaRepository<Menu, Integer> {
+    List<Menu> findByAccessRoleOrderByDisplayOrderAscMenuIdAsc(String accessRole);
 }

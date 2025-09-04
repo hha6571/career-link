@@ -46,4 +46,8 @@ public class MenuDto {
                 .map(MenuDto::of)
                 .collect(Collectors.toList());
     }
+
+    private List<MenuDto> inserts;
+    private List<MenuDto> updates;
+    private List<Integer> deletes;
 }

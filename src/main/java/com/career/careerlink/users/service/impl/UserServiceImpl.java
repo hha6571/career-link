@@ -171,7 +171,7 @@ public class UserServiceImpl implements UserService {
                         });
             }
         }
-        return new TokenResponse(accessToken, refreshToken, expiresIn);
+        return new TokenResponse(accessToken, refreshToken, expiresIn, user.getRole());
     }
 
     @Override
@@ -204,7 +204,7 @@ public class UserServiceImpl implements UserService {
 
         response.setHeader("Set-Cookie", refreshCookie.toString());
         System.out.println("==================토큰 재발급 완료 ===========");
-        return new TokenResponse(newAccessToken, newRefreshToken, expiresIn);
+        return new TokenResponse(newAccessToken, newRefreshToken, expiresIn, role);
     }
 
     @Override

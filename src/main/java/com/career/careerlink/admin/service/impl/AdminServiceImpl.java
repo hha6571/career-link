@@ -13,6 +13,7 @@ import com.career.careerlink.employers.repository.EmployerRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.global.security.JwtTokenProvider;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -91,16 +92,71 @@ public class AdminServiceImpl implements AdminService {
         mailService.sendHtmlMail(toEmail, subject, "employer-approval", context);
     }
 
+    /**메뉴관리**/
     @Override
-    public List<MenuDto> getAllMenus() {
-        List<Menu> menus = menuRepository.findAll();
-        if(menus.isEmpty() ){
-            //커스텀에러 필요시
-            throw new CareerLinkException("조회된데이터가 없습니다.");
-        }
+    public List<MenuDto> getAllMenus(String accessRole) {
+        List<Menu> menus = menuRepository.findByAccessRoleOrderByDisplayOrderAscMenuIdAsc(accessRole);
         return MenuDto.listOf(menus);
     }
 
+    @Override
+    @Transactional
+    public void saveMenus(MenuDto saveDto) {
+        var deletes = nvl(saveDto.getDeletes());
+        var inserts = nvl(saveDto.getInserts());
+        var updates = nvl(saveDto.getUpdates());
+        if (!deletes.isEmpty()) {
+            menuRepository.deleteAllByIdInBatch(deletes);
+        }
+
+        // 2) 삽입
+        for (MenuDto dto : inserts) {
+            if (Integer.valueOf(2).equals(dto.getLevel()) && dto.getParentId() == null) {
+                throw new CareerLinkException("하위 메뉴 저장 시 parentId는 필수입니다.");
+            }
+
+            Menu menu = new Menu();
+            menu.setMenuName(dto.getMenuName());
+            menu.setMenuPath(dto.getMenuPath());
+            menu.setDisplayOrder(dto.getDisplayOrder());
+            if (dto.getParentId() == null) {
+                menu.setLevel(1);
+                menu.setParent(null);
+            } else {
+                Menu parent = menuRepository.findById(dto.getParentId())
+                        .orElseThrow(() -> new CareerLinkException("부모 메뉴 없음: " + dto.getParentId()));
+                menu.setParent(parent);
+                menu.setLevel(2); // 혹은 parent.getLevel() + 1;
+            }
+            menu.setIsActive(dto.getIsActive());
+            menu.setAccessRole(dto.getAccessRole());
+            menu.setIcon(dto.getIcon());
+
+            menuRepository.save(menu);
+        }
+
+        // 3) 수정
+        for (MenuDto dto : updates) {
+            Menu menu = menuRepository.findById(dto.getMenuId())
+                    .orElseThrow(() -> new IllegalArgumentException("수정 대상 메뉴 없음: " + dto.getMenuId()));
+
+            menu.setMenuName(dto.getMenuName());
+            menu.setMenuPath(dto.getMenuPath());
+            menu.setDisplayOrder(dto.getDisplayOrder());
+            if (dto.getParentId() == null) {
+                menu.setParent(null);
+                menu.setLevel(1);
+            } else {
+                Menu parent = menuRepository.findById(dto.getParentId())
+                        .orElseThrow(() -> new IllegalArgumentException("부모 메뉴 없음: " + dto.getParentId()));
+                menu.setParent(parent);
+                menu.setLevel(2);
+            }
+            menu.setIsActive(dto.getIsActive());
+            menu.setAccessRole(dto.getAccessRole());
+            menu.setIcon(dto.getIcon());
+        }
+    }
     @Override
     public List<CommonCodeDto> getCommonCodes(String groupCode) {
         return commonCodeMapper.getCommonCodes(groupCode);

@@ -26,8 +26,13 @@ public class AdminController {
     }
 
     @GetMapping("/menu")
-    public List<MenuDto> getAllMenus() {
-        return adminService.getAllMenus();
+    public List<MenuDto> getAllMenus(@RequestParam String accessRole) {
+        return adminService.getAllMenus(accessRole);
+    }
+
+    @PostMapping("/saveMenus")
+    public void saveMenus(@RequestBody MenuDto saveDto) {
+        adminService.saveMenus(saveDto);
     }
 
     @GetMapping("/getCommonCodes")
