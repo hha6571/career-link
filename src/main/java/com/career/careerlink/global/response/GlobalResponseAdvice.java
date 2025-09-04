@@ -20,6 +20,8 @@
     import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
     import org.springframework.http.HttpMethod;
 
+    import java.util.List;
+
 
     @RestControllerAdvice
     @Order(Ordered.LOWEST_PRECEDENCE)
@@ -66,7 +68,13 @@
                 case "POST"          -> SuccessCode.CREATED;
                 case "PUT", "PATCH"  -> SuccessCode.UPDATED;
                 case "DELETE"        -> SuccessCode.DELETED;
-                default              -> SuccessCode.OK;
+                default              -> {
+                    if (body == null || body instanceof List<?> list && list.isEmpty()) {
+                        yield SuccessCode.NO_CONTENT;
+                    } else {
+                        yield SuccessCode.OK;
+                    }
+                }
             };
 
 
