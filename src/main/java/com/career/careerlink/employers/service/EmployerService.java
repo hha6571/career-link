@@ -19,5 +19,6 @@ public interface EmployerService {
     void deleteCompanyLogo();
     Page<EmployerMemberDto> getEmployerMembers(EmployerMemberSearchRequest req, String employerUserId);
     int approveOne(@NotBlank String targetEmployerUserId, @NotBlank String employerUserId);
+    int approveBulk(@NotBlank List<String>targetEmployerUserId, @NotBlank String employerUserId);
 }
 

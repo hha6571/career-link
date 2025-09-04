@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -97,5 +98,15 @@ public class EmployerController {
     public int approveOne(@PathVariable @NotBlank String targetEmployerUserId, Principal principal) {
         String employerUserId = principal.getName();
         return employerService.approveOne(targetEmployerUserId, employerUserId);
+    }
+
+    /**
+     * 기업회원 승인처리 (다건)
+     */
+    @SkipWrap
+    @PostMapping("/members/approve-bulk")
+    public int approveBulk(@RequestBody List<String> targetEmployerUserIds, Principal principal) {
+        String employerUserId = principal.getName();
+        return employerService.approveBulk(targetEmployerUserIds, employerUserId);
     }
 }

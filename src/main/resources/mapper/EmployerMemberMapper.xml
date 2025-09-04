@@ -65,6 +65,7 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+
     <update id="approveIfPending" parameterType="map">
         UPDATE employer_users eu
         JOIN employer_users me
@@ -79,16 +80,13 @@
 
     <update id="approveIfPendingBulk" parameterType="map">
         UPDATE employer_users eu
-        SET is_approved = 'Y',
-        approved_at = CURRENT_TIMESTAMP,
-        updated_at  = CURRENT_TIMESTAMP
-        WHERE eu.is_approved = 'N'
-        AND EXISTS (
-        SELECT 1
-        FROM employer_users me
-        WHERE me.employer_user_id = #{employerUserId}
+        JOIN employer_users me
+        ON me.employer_user_id = #{employerUserId}
         AND me.employer_id      = eu.employer_id
-        )
+        SET eu.is_approved = 'Y',
+        eu.approved_at = CURRENT_TIMESTAMP,
+        eu.updated_at  = CURRENT_TIMESTAMP
+        WHERE eu.is_approved = 'N'
         AND eu.employer_user_id IN
         <foreach collection="targetEmployerUserIds" item="id" open="(" separator="," close=")">
             #{id}

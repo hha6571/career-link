@@ -269,4 +269,13 @@ public class EmployerServiceImpl implements EmployerService {
                 employerUserId
         );
     }
+
+    @Override
+    @Transactional
+    public int approveBulk(List<String> targetEmployerUserIds, String employerUserId){
+        return employerMemberMapper.approveIfPendingBulk(
+                targetEmployerUserIds,
+                employerUserId
+        );
+    }
 }
