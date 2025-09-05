@@ -49,7 +49,7 @@ public class SecurityConfig {
                 ,"/api/users/send-email-code"
                 ,"/api/users/verify-email-code"
                 ,"/emp/signup"
-                ,"/common/menus"
+                ,"/common"
         };
 
         http

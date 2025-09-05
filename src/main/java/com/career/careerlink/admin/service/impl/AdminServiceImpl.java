@@ -3,7 +3,6 @@ package com.career.careerlink.admin.service.impl;
 import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.entity.Menu;
 import com.career.careerlink.admin.mapper.CommonCodeMapper;
-import com.career.careerlink.admin.repository.AdminRepository;
 import com.career.careerlink.admin.repository.MenuRepository;
 import com.career.careerlink.admin.service.AdminService;
 import com.career.careerlink.admin.spec.EmployerSpecification;
@@ -11,7 +10,6 @@ import com.career.careerlink.common.send.MailService;
 import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.employers.repository.EmployerRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
-import com.career.careerlink.global.security.JwtTokenProvider;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +26,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
-    private final AdminRepository adminRepository;
     private final EmployerRepository employerRepository;
     private final MailService mailService;
-    private final JwtTokenProvider jwtTokenProvider;
     private final MenuRepository menuRepository;
     private final CommonCodeMapper commonCodeMapper;
 
@@ -156,10 +152,6 @@ public class AdminServiceImpl implements AdminService {
             menu.setAccessRole(dto.getAccessRole());
             menu.setIcon(dto.getIcon());
         }
-    }
-    @Override
-    public List<CommonCodeDto> getCommonCodes(String groupCode) {
-        return commonCodeMapper.getCommonCodes(groupCode);
     }
 
     @Override

@@ -35,11 +35,6 @@ public class AdminController {
         adminService.saveMenus(saveDto);
     }
 
-    @GetMapping("/getCommonCodes")
-    public List<CommonCodeDto> getCommonCodes(@RequestParam String groupCode) {
-        return adminService.getCommonCodes(groupCode);
-    }
-
     @GetMapping("/getParentCodes")
     public Page<CommonCodeDto> getParentCodes(@ModelAttribute CommonCodeSearchRequest req) {
         return adminService.getParentCodes(req);

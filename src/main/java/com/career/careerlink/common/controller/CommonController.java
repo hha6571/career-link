@@ -19,4 +19,9 @@ public class CommonController {
         return commonService.getAllMenus(accessToken);
     }
 
+    @GetMapping("/getCommonCodes")
+    public List<CommonCodeDto> getCommonCodes(@RequestParam String groupCode) {
+        return commonService.getCommonCodes(groupCode);
+    }
+
 }
