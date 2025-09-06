@@ -4,6 +4,16 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.career.careerlink.admin.mapper.CommonCodeMapper">
 
+    <resultMap id="CommonCodeMap" type="com.career.careerlink.admin.dto.CommonCodeDto">
+        <result column="group_code"  property="groupCode"/>
+        <result column="code"        property="code"/>
+        <result column="code_name"   property="codeName"/>
+        <result column="parent_code" property="parentCode"/>
+        <result column="sort_order"  property="sortOrder"/>
+        <result column="level"       property="level"/>
+        <result column="use_yn"      property="useYn"/>
+    </resultMap>
+
     <select id="getCommonCodes" resultType="map">
         SELECT code, code_name AS codeName
         FROM common_codes
@@ -11,6 +21,32 @@
           AND use_yn = 'Y'
           AND parent_code IS NOT NULL
         ORDER BY sort_order
+    </select>
+
+    <select id="allCodesByGroup" resultMap="CommonCodeMap">
+        SELECT CONCAT('P:', group_code, '::', code) AS id, group_code, code, code_name, parent_code, sort_order, level, use_yn
+        FROM common_codes
+        WHERE group_code = #{groupCode}
+          AND use_yn = 'Y'
+        ORDER BY sort_order, code_name
+    </select>
+
+    <select id="parentsByGroup" resultMap="CommonCodeMap">
+        SELECT CONCAT('P:', group_code, '::', code) AS id, group_code, code, code_name, parent_code, sort_order, level, use_yn
+        FROM common_codes
+        WHERE group_code = #{groupCode}
+          AND parent_code IS NULL
+          AND use_yn = 'Y'
+        ORDER BY sort_order, code_name
+    </select>
+
+    <select id="childrenByParent" resultMap="CommonCodeMap">
+        SELECT CONCAT('P:', group_code, '::', code) AS id, group_code, code, code_name, parent_code, sort_order, level, use_yn
+        FROM common_codes
+        WHERE group_code = #{groupCode}
+          AND parent_code = #{parentCode}
+          AND use_yn = 'Y'
+        ORDER BY sort_order, code_name
     </select>
 
     <select id="parentCodesCount" resultType="long" >

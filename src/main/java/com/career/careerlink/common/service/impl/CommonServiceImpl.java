@@ -9,6 +9,7 @@ import com.career.careerlink.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.career.careerlink.admin.repository.MenuRepository;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -30,5 +31,32 @@ public class CommonServiceImpl implements CommonService {
     @Override
     public List<CommonCodeDto> getCommonCodes(String groupCode) {
         return commonCodeMapper.getCommonCodes(groupCode);
+    }
+
+    @Override
+    public List<CommonCodeDto> allCodesByGroup(String groupCode) {
+        if (!StringUtils.hasText(groupCode)) {
+            throw new IllegalArgumentException("groupCode is required");
+        }
+        return commonCodeMapper.allCodesByGroup(groupCode);
+    }
+
+    @Override
+    public List<CommonCodeDto> parentsByGroup(String groupCode) {
+        if (!StringUtils.hasText(groupCode)) {
+            throw new IllegalArgumentException("groupCode is required");
+        }
+        return commonCodeMapper.parentsByGroup(groupCode);
+    }
+
+    @Override
+    public List<CommonCodeDto> childrenByParent(String groupCode, String parentCode) {
+        if (!StringUtils.hasText(groupCode)) {
+            throw new IllegalArgumentException("groupCode is required");
+        }
+        if (!StringUtils.hasText(parentCode)) {
+            throw new IllegalArgumentException("parentCode is required");
+        }
+        return commonCodeMapper.childrenByParent(groupCode, parentCode);
     }
 }

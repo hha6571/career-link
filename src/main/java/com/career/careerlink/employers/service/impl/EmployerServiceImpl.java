@@ -1,13 +1,11 @@
 package com.career.careerlink.employers.service.impl;
 
-import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.employers.dto.*;
 import com.career.careerlink.employers.entity.EmployerUsers;
 import com.career.careerlink.employers.mapper.EmployerMemberMapper;
 import com.career.careerlink.employers.repository.EmployerRepository;
 import com.career.careerlink.employers.repository.EmployerUserRepository;
 import com.career.careerlink.employers.service.EmployerService;
-import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.global.s3.S3Service;
 import com.career.careerlink.global.s3.S3UploadType;
 import com.career.careerlink.global.util.UserIdGenerator;
@@ -23,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,7 +36,6 @@ public class EmployerServiceImpl implements EmployerService {
     private final EntityManager em;
     private final PasswordEncoder passwordEncoder;
     private final EmployerMemberMapper employerMemberMapper;
-    private static final int MAX_BULK = 500;
 
     // ----------------------------
     // 공통: 로그인 사용자 → employerId 해석

@@ -50,6 +50,8 @@ public class SecurityConfig {
                 ,"/api/users/verify-email-code"
                 ,"/emp/signup"
                 ,"/common/**"
+                ,"/job/filters"
+                ,"/job/jobList"
         };
 
         http

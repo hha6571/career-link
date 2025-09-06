@@ -3,7 +3,8 @@ package com.career.careerlink.global.s3;
 public enum S3UploadType {
     PROFILE_IMAGE("profile-images/"),
     BUSINESS_CERTIFICATE("bizRegistrations/"),
-    COMPANY_LOGO("company-logos/");
+    COMPANY_LOGO("company-logos/"),
+    JOB_POSTING("job-postings/");
 
     private final String dir;
 

@@ -11,6 +11,5 @@ import java.util.Optional;
 public interface EmployerUserRepository extends JpaRepository<EmployerUsers, String> {
     long countByEmployerId(String employerId);
     Optional<EmployerUsers> findByEmployerUserId(String employerUserId);
-
     Optional<EmployerUsers> findByEmployerUserIdAndIsApproved(String employerUserId, AgreementStatus isApproved);
 }

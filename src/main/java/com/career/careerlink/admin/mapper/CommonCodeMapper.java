@@ -20,6 +20,14 @@ public interface CommonCodeMapper {
     List<CommonCodeDto> childCodes(@Param("req") CommonCodeSearchRequest req,
                                     @Param("offset") int offset,
                                     @Param("limit") int limit);
+
+    List<CommonCodeDto> allCodesByGroup(@Param("groupCode") String groupCode);
+
+    // (옵션) 캐스케이딩 셀렉트용 심플 쿼리
+    List<CommonCodeDto> parentsByGroup(@Param("groupCode") String groupCode);
+    List<CommonCodeDto> childrenByParent(@Param("groupCode") String groupCode,
+                                         @Param("parentCode") String parentCode);
+
     // delete
     void deleteChildren(@Param("list") List<CommonCodeDto> list);
     void deleteParents(@Param("list") List<CommonCodeDto> list);

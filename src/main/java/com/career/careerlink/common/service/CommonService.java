@@ -9,4 +9,7 @@ import java.util.List;
 public interface CommonService {
     List<MenuDto> getAllMenus(@RequestHeader("Authorization") String accessToken);
     List<CommonCodeDto> getCommonCodes(String groupCode);
+    List<CommonCodeDto> allCodesByGroup(String groupCode);
+    List<CommonCodeDto> parentsByGroup(String groupCode);
+    List<CommonCodeDto> childrenByParent(String groupCode, String parentCode);
 }
