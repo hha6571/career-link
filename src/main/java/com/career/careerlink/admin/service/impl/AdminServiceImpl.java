@@ -3,6 +3,7 @@ package com.career.careerlink.admin.service.impl;
 import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.entity.Menu;
 import com.career.careerlink.admin.mapper.CommonCodeMapper;
+import com.career.careerlink.admin.mapper.UsersMapper;
 import com.career.careerlink.admin.repository.MenuRepository;
 import com.career.careerlink.admin.service.AdminService;
 import com.career.careerlink.admin.spec.EmployerSpecification;
@@ -30,6 +31,7 @@ public class AdminServiceImpl implements AdminService {
     private final MailService mailService;
     private final MenuRepository menuRepository;
     private final CommonCodeMapper commonCodeMapper;
+    private final UsersMapper usersMapper;
 
     @Override
     public List<AdminEmployerRequestDto> getAllEmployersWithFilter(AdminEmployerRequestDto searchRequest) {
@@ -213,6 +215,34 @@ public class AdminServiceImpl implements AdminService {
             for (var dto : cU) commonCodeMapper.updateChildren(dto);
         }
     }
+
+    @Override
+    public Page<UsersDto> getUsers(UsersRequestDto req) {
+        int page = Optional.ofNullable(req.getPage()).orElse(0);
+        int size = Optional.ofNullable(req.getSize()).orElse(10);
+
+       // 0-based page → offset
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        int offset = safePage * safeSize;
+
+        long total = usersMapper.usersCount(req);
+        List<UsersDto> rows = usersMapper.getUsers(req, offset, safeSize);
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize), total);
+    }
+
+    @Override
+    @Transactional
+    public void saveUsers(List<UsersDto> list) {
+        for (UsersDto u : list) {
+            if ("EMP".equals(u.getRole())) {
+                usersMapper.updateEmployerStatus(u.getUserPk(), u.getUserStatus());
+            } else if ("USER".equals(u.getRole())) {
+                usersMapper.updateApplicantStatus(u.getUserPk(), u.getUserStatus());
+            }
+        }
+    }
+
     private static <T> List<T> nvl(List<T> v) { return v == null ? List.of() : v; }
 
 }
