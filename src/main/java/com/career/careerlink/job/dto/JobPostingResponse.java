@@ -16,7 +16,9 @@ public class JobPostingResponse {
     private String title;
     private String description;
     private String employerId;
+    private String companyName;
     private String jobFieldCode;
+    private String educationLevelCode;
     private String locationCode;
     private String employmentTypeCode;
     private String careerLevelCode;
@@ -30,6 +32,7 @@ public class JobPostingResponse {
                 .title(posting.getTitle())
                 .description(posting.getDescription())
                 .employerId(posting.getEmployerId())
+                .companyName(posting.getEmployer() != null ? posting.getEmployer().getCompanyName() : null)
                 .jobFieldCode(posting.getJobFieldCode())
                 .locationCode(posting.getLocationCode())
                 .employmentTypeCode(posting.getEmploymentTypeCode())

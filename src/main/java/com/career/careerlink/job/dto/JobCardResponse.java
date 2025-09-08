@@ -13,6 +13,8 @@ public class JobCardResponse {
     Integer jobId;           // jobPostingId
     String title;
     String employerId;
+    String companyName;
+    String companyLogoUrl;
     String jobField;
     String location;
     String employmentType;

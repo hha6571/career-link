@@ -124,6 +124,8 @@ public class JobServiceImpl implements JobService {
                 .jobId(e.getJobPostingId())
                 .title(e.getTitle())
                 .employerId(e.getEmployerId())
+                .companyName(e.getEmployer() != null ? e.getEmployer().getCompanyName() : null)
+                .companyLogoUrl(e.getEmployer() != null ? e.getEmployer().getCompanyLogoUrl() : null)
                 .location(e.getLocationCode())
                 .employmentType(e.getEmploymentTypeCode())
                 .careerLevel(e.getCareerLevelCode())
@@ -132,5 +134,12 @@ public class JobServiceImpl implements JobService {
                 .postedAt(e.getCreatedAt())
                 .deadline(e.getApplicationDeadline())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JobPostingResponse detailJobPosting(int jobPostingId) {
+        return jobRepository.findDetailJobPosting(jobPostingId)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "해당 공고를 찾을 수 없습니다."));
     }
 }

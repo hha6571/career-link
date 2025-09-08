@@ -53,12 +53,17 @@ public class JobController {
 
     // 공고등록
     @PreAuthorize("hasRole('EMP')")
-    @PostMapping("/job-posting")
+    @PostMapping("/job-posting/new")
     public JobPostingResponse saveJobPosting(
             @Valid @RequestBody EmployerCreateJobPostingRequest req,
             Authentication authentication) {
 
         String employerUserId = authentication.getName();
         return jobService.saveJobPosting(employerUserId, req);
+    }
+
+    @GetMapping("/job-posting/detail")
+    public JobPostingResponse detailJobPosting(@RequestParam(name = "id") int jobPostingId){
+        return jobService.detailJobPosting(jobPostingId);
     }
 }

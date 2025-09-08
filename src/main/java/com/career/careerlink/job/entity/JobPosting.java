@@ -1,5 +1,6 @@
 package com.career.careerlink.job.entity;
 
+import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,7 +21,13 @@ public class JobPosting {
     @Column(name = "job_posting_id", updatable = false, nullable = false)
     private Integer jobPostingId;
 
+    @Column(name = "employer_id")
     private String employerId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employer_id", insertable = false, updatable = false)
+    private Employer employer;
+
     private String title;
 
     @Column(columnDefinition = "LONGTEXT")

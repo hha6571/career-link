@@ -52,6 +52,7 @@ public class SecurityConfig {
                 ,"/common/**"
                 ,"/job/filters"
                 ,"/job/jobList"
+                ,"/job/job-posting/detail"
         };
 
         http
