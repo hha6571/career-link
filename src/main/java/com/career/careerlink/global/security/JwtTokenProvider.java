@@ -17,25 +17,36 @@ public class JwtTokenProvider {
     @Value("${spring.jwt.secret}")
     private String secretKey;
 
-    private final long accessTokenExpiration = 1000 * 60 * 15; // 15분
+    private final long accessTokenExpiration = 1000 * 60 * 60; // 60분
     private final long refreshTokenExpiration = 1000L * 60 * 60 * 24 * 14; // 14일
 
-    public String createAccessToken(String userId, String role) {
-        return Jwts.builder()
+    public String createAccessToken(String userId, String role, String employerId) {
+        var builder = Jwts.builder()
                 .setSubject(userId)
                 .claim("role", role)
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+                .signWith(SignatureAlgorithm.HS256, secretKey);
+
+        if (employerId != null && !employerId.isBlank()) {
+            builder.claim("employerId", employerId);
+        }
+
+        return builder.compact();
     }
 
-    public String createRefreshToken(String userId, String role) {
-        return Jwts.builder()
+    public String createRefreshToken(String userId, String role, String employerId) {
+        var builder = Jwts.builder()
                 .setSubject(userId)
                 .claim("role", role)
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+                .signWith(SignatureAlgorithm.HS256, secretKey);
+
+        if (employerId != null && !employerId.isBlank()) {
+            builder.claim("employerId", employerId);
+        }
+
+        return builder.compact();
+
     }
 
     public boolean validateToken(String token) {
@@ -58,7 +69,14 @@ public class JwtTokenProvider {
         Claims claims = Jwts.parser().setSigningKey(secretKey)
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.get("role", String.class); // 👈 role 추출
+        return claims.get("role", String.class);
+    }
+
+    public String getEmployerId(String token) {
+        Claims claims = Jwts.parser().setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("employerId", String.class);
     }
 
     public long getRefreshTokenExpiration() {

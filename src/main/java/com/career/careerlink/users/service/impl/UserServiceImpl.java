@@ -122,8 +122,17 @@ public class UserServiceImpl implements UserService {
         // (이하 토큰 발급/쿠키 세팅/레디스 저장/마지막 로그인 시간 갱신 등 기존 로직 그대로)
         // ...
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getUserPk(), user.getRole());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserPk(), user.getRole());
+        String employerId = null;
+
+        if ("EMP".equals(user.getRole())) {
+            var empOpt = employerUserRepository.findEmployerIdByEmployerUserId(user.getUserPk());
+            if (empOpt.isPresent() && empOpt.get().getEmployerId() != null) {
+                employerId = empOpt.get().getEmployerId();
+            }
+        }
+
+        String accessToken = jwtTokenProvider.createAccessToken(user.getUserPk(), user.getRole(), employerId);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserPk(), user.getRole(), employerId);
         long expiresIn = jwtTokenProvider.getRemainingTime(accessToken);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -171,7 +180,7 @@ public class UserServiceImpl implements UserService {
                         });
             }
         }
-        return new TokenResponse(accessToken, refreshToken, expiresIn, user.getRole());
+        return new TokenResponse(accessToken, refreshToken, expiresIn);
     }
 
     @Override
@@ -182,14 +191,15 @@ public class UserServiceImpl implements UserService {
 
         String userId = jwtTokenProvider.getUserId(dto.getRefreshToken());
         String role = jwtTokenProvider.getRole(dto.getRefreshToken());
+        String employerId = jwtTokenProvider.getEmployerId(dto.getRefreshToken());
         String redisRefresh = redisUtil.get("refresh:" + userId);
 
         if (!dto.getRefreshToken().equals(redisRefresh)) {
             throw new RuntimeException("불일치 리프레시 토큰");
         }
 
-        String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId, role);
+        String newAccessToken = jwtTokenProvider.createAccessToken(userId, role, employerId);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId, role, employerId);
         long expiresIn = jwtTokenProvider.getRemainingTime(newAccessToken);
 
         redisUtil.set("refresh:" + userId, newRefreshToken, jwtTokenProvider.getRefreshTokenExpiration());
@@ -204,7 +214,7 @@ public class UserServiceImpl implements UserService {
 
         response.setHeader("Set-Cookie", refreshCookie.toString());
         System.out.println("==================토큰 재발급 완료 ===========");
-        return new TokenResponse(newAccessToken, newRefreshToken, expiresIn, role);
+        return new TokenResponse(newAccessToken, newRefreshToken, expiresIn);
     }
 
     @Override
