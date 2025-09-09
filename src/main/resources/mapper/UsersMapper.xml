@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.career.careerlink.admin.mapper.UsersMapper">
+
+    <select id="usersCount" resultType="long" >
+        SELECT COUNT(*)
+        FROM v_user_login_info
+        <where>
+            <if test ="keyword != null and !keyword.equals('')">
+                AND user_name LIKE CONCAT('%',#{keyword},'%')
+            </if>
+            <if test ="role != null and !role.equals('')">
+                AND role = #{role}
+            </if>
+        </where>
+    </select>
+
+    <!-- 목록 (offset/limit) -->
+    <select id="getUsers" resultType="com.career.careerlink.admin.dto.UsersDto">
+        SELECT
+        login_id AS loginId,
+        user_name AS userName,
+        email AS email,
+        role AS role,
+        user_pk AS userPK,
+        user_status AS userStatus
+        FROM v_user_login_info
+        <where>
+            <if test="req.keyword != null and !req.keyword.equals('')">
+                AND user_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.role != null and !req.role.equals('')">
+                AND role = #{req.role}
+            </if>
+        </where>
+
+        <choose>
+            <when test="req.sort != null and req.sort != ''">
+                ORDER BY
+                <choose>
+                    <when test="req.sort == 'loginId'"> login_id </when>
+                    <when test="req.sort == 'userName'"> user_name </when>
+                    <when test="req.sort == 'email'"> email </when>
+                    <when test="req.sort == 'role'"> role </when>
+                    <when test="req.sort == 'userPK'"> user_pk </when>
+                    <when test="req.sort == 'userStatus'"> user_status </when>
+                    <otherwise> user_name </otherwise>
+                </choose>
+                <choose>
+                    <when test="req.direction == 'desc' or req.direction == 'DESC'"> DESC </when>
+                    <otherwise> ASC </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                ORDER BY user_name ASC
+            </otherwise>
+        </choose>
+
+        <!-- 페이징 -->
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <update id="updateEmployerStatus">
+        UPDATE employer_users
+        SET employer_status = #{userStatus}
+        WHERE employer_user_id = #{userPk}
+    </update>
+
+    <update id="updateApplicantStatus">
+        UPDATE applicants
+        SET user_status = #{userStatus}
+        WHERE user_id = #{userPk}
+    </update>
+
+</mapper>

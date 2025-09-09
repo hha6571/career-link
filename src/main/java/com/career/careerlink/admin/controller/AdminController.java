@@ -25,6 +25,7 @@ public class AdminController {
         adminService.approveEmployer(employerId);
     }
 
+    /**메뉴관리**/
     @GetMapping("/menu")
     public List<MenuDto> getAllMenus(@RequestParam String accessRole) {
         return adminService.getAllMenus(accessRole);
@@ -34,7 +35,7 @@ public class AdminController {
     public void saveMenus(@RequestBody MenuDto saveDto) {
         adminService.saveMenus(saveDto);
     }
-
+    /**공통코드관리**/
     @GetMapping("/getParentCodes")
     public Page<CommonCodeDto> getParentCodes(@ModelAttribute CommonCodeSearchRequest req) {
         return adminService.getParentCodes(req);
@@ -44,8 +45,22 @@ public class AdminController {
     public Page<CommonCodeDto> getChildCodes(@ModelAttribute CommonCodeSearchRequest req) {
         return adminService.getChildCodes(req);
     }
+
     @PostMapping("/saveCommonCodes")
     public void saveCommonCodes(@RequestBody CommonCodeSaveDto saveDto) {
         adminService.saveCommonCodes(saveDto);
     }
+    /**
+     * 사용자관리
+     **/
+    @GetMapping("/getUsers")
+    public Page<UsersDto> getUsers(@ModelAttribute UsersRequestDto req){
+        return adminService.getUsers(req);
+    }
+    @PostMapping("/saveUsers")
+    public void saveUsers(@RequestBody List<UsersDto> list){
+        adminService.saveUsers(list);
+    }
+
+
 }
