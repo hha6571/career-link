@@ -8,11 +8,7 @@ import com.career.careerlink.employers.entity.EmployerUsers;
 import com.career.careerlink.employers.repository.EmployerRepository;
 import com.career.careerlink.employers.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
-import com.career.careerlink.job.dto.EmployerCreateJobPostingRequest;
-import com.career.careerlink.job.dto.JobPostingResponse;
-import com.career.careerlink.job.dto.JobCardResponse;
-import com.career.careerlink.job.dto.JobFiltersResponse;
-import com.career.careerlink.job.dto.JobSearchCond;
+import com.career.careerlink.job.dto.*;
 import com.career.careerlink.job.entity.JobPosting;
 import com.career.careerlink.job.repository.JobRepository;
 import com.career.careerlink.job.service.JobService;
@@ -20,9 +16,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.career.careerlink.job.spec.JobPostingSpecs.*;
@@ -45,7 +44,7 @@ public class JobServiceImpl implements JobService {
 
     @Transactional
     @Override
-    public JobPostingResponse saveJobPosting(String employerUserId, EmployerCreateJobPostingRequest dto) {
+    public JobPostingResponse saveJobPosting(String employerUserId, CreateJobPostingRequest dto) {
         // 1. employer_user 검증
         EmployerUsers employerUser = employerUserRepository.findByEmployerUserId(employerUserId)
                 .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "사용자를 찾을 수 없습니다."));
@@ -67,10 +66,13 @@ public class JobServiceImpl implements JobService {
         posting.setJobFieldCode(dto.getJobFieldCode());
         posting.setLocationCode(dto.getLocationCode());
         posting.setEmploymentTypeCode(dto.getEmploymentTypeCode());
+        posting.setEducationLevelCode(dto.getEducationLevelCode());
         posting.setCareerLevelCode(dto.getCareerLevelCode());
         posting.setSalaryCode(dto.getSalaryCode());
         posting.setApplicationDeadline(dto.getApplicationDeadline());
         posting.setIsActive(dto.getIsActive());
+        posting.setCreatedBy(employerUserId);
+        posting.setUpdatedBy(employerUserId);
 
         JobPosting saved = jobRepository.save(posting);
         return JobPostingResponse.from(saved);
@@ -105,17 +107,18 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public Page<JobCardResponse> getJobList(JobSearchCond c, Pageable pageable) {
-        Specification<JobPosting> spec = Specification.allOf(isActive())
-                .and(keywordLike(c.getKeyword()))
-                .and(jobFieldEq(c.getJobField()))
-                .and(locationEq(c.getLocation()))
-                .and(empTypeEq(c.getEmpType()))
-                .and(educationEq(c.getEdu()))
-                .and(careerLevelEq(c.getExp()))
-                .and(salaryEq(c.getSal()));
+        Specification<JobPosting> spec = Specification.allOf(
+                isActive(),
+                keywordLike(c.getKeyword()),
+                jobFieldIn(c.getJobField()),
+                locationIn(c.getLocation()),
+                empTypeIn(c.getEmpType()),
+                educationIn(c.getEdu()),
+                careerLevelIn(c.getExp()),
+                salaryIn(c.getSal())
+        );
 
         var page = jobRepository.findAll(spec, pageable);
-
         return page.map(this::toCard);
     }
 
@@ -141,5 +144,41 @@ public class JobServiceImpl implements JobService {
     public JobPostingResponse detailJobPosting(int jobPostingId) {
         return jobRepository.findDetailJobPosting(jobPostingId)
                 .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "해당 공고를 찾을 수 없습니다."));
+    }
+
+    @Override
+    @Transactional
+    public void updateJobPosting(Integer jobPostingId, UpdateJobPostingRequest req) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isEmp = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_EMP"));
+
+        JobPosting posting = jobRepository.findById(jobPostingId)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "채용공고가 존재하지 않습니다. id=" + jobPostingId));
+
+        if (!isAdmin) {
+            if (!isEmp) {
+                throw new CareerLinkException(ErrorCode.FORBIDDEN, "해당 채용공고에 대한 수정 권한이 없습니다.");
+            }
+        }
+
+        posting.setTitle(req.getTitle());
+        posting.setDescription(req.getDescription());
+        posting.setJobFieldCode(req.getJobFieldCode());
+        posting.setLocationCode(req.getLocationCode());
+        posting.setEmploymentTypeCode(req.getEmploymentTypeCode());
+        posting.setEducationLevelCode(req.getEducationLevelCode());
+        posting.setCareerLevelCode(req.getCareerLevelCode());
+        posting.setSalaryCode(req.getSalaryCode());
+        posting.setApplicationDeadline(req.getApplicationDeadline());
+        posting.setIsSkillsnap(req.getIsSkillsnap());
+        posting.setIsActive(req.getIsActive());
+        posting.setUpdatedBy(auth.getName());
+        posting.setUpdatedAt(LocalDateTime.now());
+
+        jobRepository.save(posting);
     }
 }

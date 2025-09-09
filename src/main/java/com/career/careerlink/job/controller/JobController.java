@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/job")
 @RequiredArgsConstructor
@@ -31,12 +33,12 @@ public class JobController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "16") int size,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String jobField,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) String empType,
-            @RequestParam(required = false) String edu,
-            @RequestParam(required = false) String exp,
-            @RequestParam(required = false) String sal
+            @RequestParam(required = false) List<String> jobField,
+            @RequestParam(required = false) List<String> location,
+            @RequestParam(required = false) List<String> empType,
+            @RequestParam(required = false) List<String> edu,
+            @RequestParam(required = false) List<String> exp,
+            @RequestParam(required = false) List<String> sal
     ) {
         var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         var cond = JobSearchCond.builder()
@@ -55,7 +57,7 @@ public class JobController {
     @PreAuthorize("hasRole('EMP')")
     @PostMapping("/job-posting/new")
     public JobPostingResponse saveJobPosting(
-            @Valid @RequestBody EmployerCreateJobPostingRequest req,
+            @Valid @RequestBody CreateJobPostingRequest req,
             Authentication authentication) {
 
         String employerUserId = authentication.getName();
@@ -65,5 +67,11 @@ public class JobController {
     @GetMapping("/job-posting/detail")
     public JobPostingResponse detailJobPosting(@RequestParam(name = "id") int jobPostingId){
         return jobService.detailJobPosting(jobPostingId);
+    }
+
+    @PreAuthorize("hasAnyRole('EMP','ADMIN')")
+    @PutMapping("/job-posting/update")
+    public void update(@RequestParam("id") Integer jobPostingId,@Valid @RequestBody UpdateJobPostingRequest req) {
+        jobService.updateJobPosting(jobPostingId, req);
     }
 }

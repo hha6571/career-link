@@ -2,7 +2,6 @@ package com.career.careerlink.employers.service;
 
 import com.career.careerlink.employers.dto.*;
 import com.career.careerlink.employers.entity.Employer;
-import com.career.careerlink.job.dto.EmployerCreateJobPostingRequest;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestPart;
