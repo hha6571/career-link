@@ -24,7 +24,7 @@ public class CommonServiceImpl implements CommonService {
     @Override
     public List<MenuDto> getAllMenus(String accessToken) {
         String userRole = jwtTokenProvider.getRole(accessToken.replace("Bearer ",""));
-        List<Menu> menus = menuRepository.findByAccessRoleOrderByDisplayOrderAscMenuIdAsc(userRole);
+        List<Menu> menus = menuRepository.findByAccessRoleOrderByDisplayOrderAscMenuIdAsc(userRole,"Y");
         return MenuDto.listOf(menus);
     }
 
