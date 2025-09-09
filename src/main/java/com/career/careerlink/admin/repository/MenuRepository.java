@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface MenuRepository extends JpaRepository<Menu, Integer> {
+    List<Menu> findByAccessRoleOrderByDisplayOrderAscMenuIdAsc(String accessRole);
     List<Menu> findByAccessRoleOrderByDisplayOrderAscMenuIdAsc(String accessRole, String isActive);
 }
