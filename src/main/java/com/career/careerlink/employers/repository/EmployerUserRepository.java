@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface EmployerUserRepository extends JpaRepository<EmployerUsers, String> {
     long countByEmployerId(String employerId);
+    Optional<EmployerUsers> findEmployerIdByEmployerUserId(String employerUserId);
     Optional<EmployerUsers> findByEmployerUserId(String employerUserId);
     Optional<EmployerUsers> findByEmployerUserIdAndIsApproved(String employerUserId, AgreementStatus isApproved);
 }
