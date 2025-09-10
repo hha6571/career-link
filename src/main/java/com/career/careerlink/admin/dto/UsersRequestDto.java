@@ -3,7 +3,6 @@ package com.career.careerlink.admin.dto;
 import lombok.*;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

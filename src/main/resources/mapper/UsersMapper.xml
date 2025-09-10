@@ -27,15 +27,13 @@
         user_pk AS userPK,
         user_status AS userStatus
         FROM v_user_login_info
-        <where>
+        WHERE role NOT IN ('EMP_PENDING','ADMIN')
             <if test="req.keyword != null and !req.keyword.equals('')">
                 AND user_name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
             <if test="req.role != null and !req.role.equals('')">
                 AND role = #{req.role}
             </if>
-        </where>
-
         <choose>
             <when test="req.sort != null and req.sort != ''">
                 ORDER BY
