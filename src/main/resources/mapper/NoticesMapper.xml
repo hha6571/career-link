@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.career.careerlink.common.mapper.NoticeMapper">
+    <select id="getNoticeCount" resultType="long" >
+        SELECT COUNT(*)
+        FROM notices
+        <where>
+            <if test ="keyword != null and !keyword.equals('')">
+                AND (title LIKE CONCAT('%',#{title},'%')
+                OR content LIKE CONCAT('%',#{title},'%')
+                )
+            </if>
+            <if test ="noticeType != null and !noticeType.equals('')">
+                AND notice_type = #{noticeType}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAdminNotices" resultType="com.career.careerlink.common.dto.NoticeDto">
+        SELECT
+        notice_id    AS noticeId,
+        notice_type  AS noticeType,
+        title        AS title,
+        content      AS content,
+        file_url     AS fileUrl,
+        writer_id    AS writerId,
+        view_count   AS viewCount,
+        is_top_fixed AS isTopFixed,
+        is_exposed   AS isExposed,
+        is_deleted   AS isDeleted,
+        start_date   AS startDate,
+        end_date     AS endDate,
+        created_by   AS createdBy,
+        updated_by   AS updatedBy,
+        created_at   AS createdAt,
+        updated_at   AS updatedAt
+        FROM notices
+        WHERE is_deleted = 'N'
+        <!-- 검색 키워드 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            AND (
+            title   LIKE CONCAT('%', #{req.keyword}, '%')
+            OR content LIKE CONCAT('%', #{req.keyword}, '%')
+            )
+        </if>
+
+        <!-- 공지 유형 필터 -->
+        <if test="req.noticeType != null and req.noticeType != ''">
+            AND notice_type = #{req.noticeType}
+        </if>
+
+        <!-- 정렬 화이트리스트 -->
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'title'"> title </when>
+            <when test="req.sort == 'createdAt'"> created_at </when>
+            <when test="req.sort == 'viewCount'"> view_count </when>
+            <otherwise> notice_id </otherwise>
+        </choose>
+        <choose>
+            <when test="req.direction == 'desc' or req.direction == 'DESC'"> DESC </when>
+            <otherwise> ASC </otherwise>
+        </choose>
+
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="commonNoticeCount" resultType="int">
+        SELECT COUNT(*)
+        FROM notices
+        WHERE is_deleted = 'N'
+        AND is_exposed = 'Y'
+        AND (
+        (start_date IS NULL OR start_date &lt;= CURRENT_DATE)
+        AND (end_date IS NULL OR end_date &gt;= CURRENT_DATE)
+        )
+        <if test="noticeType != null and noticeType != ''">
+            AND notice_type = #{noticeType}
+        </if>
+    </select>
+
+    <select id="getCommonNotices" resultType="com.career.careerlink.common.dto.NoticeDto">
+        SELECT
+        notice_id    AS noticeId,
+        notice_type  AS noticeType,
+        title,
+        writer_id    AS writerId,
+        view_count   AS viewCount,
+        is_top_fixed AS isTopFixed,
+        is_exposed   AS isExposed,
+        start_date   AS startDate,
+        end_date     AS endDate,
+        created_at   AS createdAt,
+        updated_at   AS updatedAt
+        FROM notices
+        WHERE is_deleted = 'N'
+          AND is_exposed = 'Y'
+        <if test="req.noticeType != null and req.noticeType != ''">
+            AND notice_type = #{req.noticeType}
+        </if>
+        ORDER BY is_top_fixed,
+        created_at
+        <choose>
+            <when test="req.sort == 'OLD'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+</mapper>

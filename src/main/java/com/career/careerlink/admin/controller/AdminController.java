@@ -2,9 +2,18 @@ package com.career.careerlink.admin.controller;
 
 import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.service.AdminService;
+import com.career.careerlink.common.dto.FaqDto;
+import com.career.careerlink.common.dto.NoticeDetailDto;
+import com.career.careerlink.common.dto.NoticeDto;
+import com.career.careerlink.common.dto.NoticeRequestDto;
+import com.career.careerlink.common.entity.enums.Category;
+import com.career.careerlink.global.response.SkipWrap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -61,6 +70,50 @@ public class AdminController {
     public void saveUsers(@RequestBody List<UsersDto> list){
         adminService.saveUsers(list);
     }
-
-
+    /**
+     * 공지사항관리
+     **/
+    @GetMapping("/getNotices")
+    public Page<NoticeDto> getNotices(NoticeRequestDto req) {
+        return adminService.getNotices(req);
+    }
+    @SkipWrap
+    @PostMapping(value = "/saveNotice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Long createNotice(
+            @RequestPart("dto") NoticeDetailDto dto,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        return adminService.createNotice(dto, file);
+    }
+    @SkipWrap
+    @PutMapping(value = "/saveNotice/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Long updateNotice(
+            @RequestPart("dto") NoticeDetailDto dto,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        return adminService.updateNotice(dto, file);
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/deleteNotice/{id}")
+    public void deleteNotice(@PathVariable Long id) {
+       adminService.deleteNotice(id);
+    }
+    /**
+     * 자주하는질문
+     **/
+    @GetMapping("/getFaqs")
+    public List<FaqDto> getFaqs(@RequestParam Category category) {
+        return adminService.getFaqs(category);
+    }
+    @PostMapping("/createFaq")
+    public void createFaq(@RequestBody FaqDto dto) {
+        adminService.createFaq(dto);
+    }
+    @PutMapping("/updateFaq")
+    public void updateFaq(@RequestBody FaqDto dto) {
+        adminService.updateFaq(dto);
+    }
+    @DeleteMapping("/deleteFaq/{faqId}")
+    public void deleteFaq(@PathVariable Long faqId) {
+        adminService.deleteFaq(faqId);
+    }
 }

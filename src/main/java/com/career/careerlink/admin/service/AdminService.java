@@ -1,8 +1,14 @@
 package com.career.careerlink.admin.service;
 
 import com.career.careerlink.admin.dto.*;
+import com.career.careerlink.common.dto.FaqDto;
+import com.career.careerlink.common.dto.NoticeDetailDto;
+import com.career.careerlink.common.dto.NoticeDto;
+import com.career.careerlink.common.dto.NoticeRequestDto;
+import com.career.careerlink.common.entity.enums.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,4 +22,12 @@ public interface AdminService {
     void saveCommonCodes(CommonCodeSaveDto saveDto);
     Page<UsersDto> getUsers(UsersRequestDto req);
     void saveUsers(@RequestBody List<UsersDto> list);
+    Page<NoticeDto> getNotices(NoticeRequestDto req);
+    Long updateNotice(NoticeDetailDto dto, MultipartFile file);
+    Long createNotice(NoticeDetailDto dto, MultipartFile file);
+    void deleteNotice(Long id);
+    List<FaqDto> getFaqs(Category category);
+    void createFaq(FaqDto dto);
+    void updateFaq(FaqDto dto);
+    void deleteFaq(Long faqId);
 }

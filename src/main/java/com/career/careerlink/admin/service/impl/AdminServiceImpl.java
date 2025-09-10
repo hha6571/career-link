@@ -7,16 +7,29 @@ import com.career.careerlink.admin.mapper.UsersMapper;
 import com.career.careerlink.admin.repository.MenuRepository;
 import com.career.careerlink.admin.service.AdminService;
 import com.career.careerlink.admin.spec.EmployerSpecification;
+import com.career.careerlink.common.dto.FaqDto;
+import com.career.careerlink.common.dto.NoticeDetailDto;
+import com.career.careerlink.common.dto.NoticeDto;
+import com.career.careerlink.common.dto.NoticeRequestDto;
+import com.career.careerlink.common.entity.Faq;
+import com.career.careerlink.common.entity.Notice;
+import com.career.careerlink.common.entity.enums.Category;
+import com.career.careerlink.common.mapper.NoticeMapper;
+import com.career.careerlink.common.repository.FaqRepository;
+import com.career.careerlink.common.repository.NoticeDetailRepository;
 import com.career.careerlink.common.send.MailService;
 import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.employers.repository.EmployerRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
+import com.career.careerlink.global.s3.S3Service;
+import com.career.careerlink.global.s3.S3UploadType;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
@@ -32,6 +45,10 @@ public class AdminServiceImpl implements AdminService {
     private final MenuRepository menuRepository;
     private final CommonCodeMapper commonCodeMapper;
     private final UsersMapper usersMapper;
+    private final NoticeMapper noticeMapper;
+    private final NoticeDetailRepository noticeDetailRepository;
+    private final S3Service s3Service;
+    private final FaqRepository faqRepository;
 
     @Override
     public List<AdminEmployerRequestDto> getAllEmployersWithFilter(AdminEmployerRequestDto searchRequest) {
@@ -241,6 +258,86 @@ public class AdminServiceImpl implements AdminService {
                 usersMapper.updateApplicantStatus(u.getUserPk(), u.getUserStatus());
             }
         }
+    }
+    @Override
+    public Page<NoticeDto> getNotices(NoticeRequestDto req) {
+        int page = Optional.ofNullable(req.getPage()).orElse(0);
+        int size = Optional.ofNullable(req.getSize()).orElse(10);
+
+        // 0-based page → offset
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        int offset = safePage * safeSize;
+        long total = noticeMapper.getNoticeCount(req);
+        List<NoticeDto> rows = noticeMapper.getAdminNotices(req, offset, safeSize);
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize),total);
+    }
+
+    @Override
+    @Transactional
+    public Long createNotice(NoticeDetailDto dto, MultipartFile file) {
+        String fileUrl = null;
+        if (file != null && !file.isEmpty()) {
+            fileUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, file);
+        }
+
+        Notice notice = dto.toEntity(fileUrl);
+        Notice saved = noticeDetailRepository.save(notice);
+        return saved.getNoticeId();
+    }
+
+    @Override
+    @Transactional
+    public Long updateNotice(NoticeDetailDto dto, MultipartFile file) {
+        Notice notice = noticeDetailRepository.findById(dto.getNoticeId())
+                .orElseThrow(() -> new CareerLinkException("공지사항이 존재하지 않습니다."));
+
+        String fileUrl = notice.getFileUrl();
+        if (file != null && !file.isEmpty()) {
+            fileUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, file);
+            if (notice.getFileUrl() != null) {
+                s3Service.deleteFileByUrl(notice.getFileUrl());
+            }
+        }
+
+        dto.updateEntity(notice, fileUrl);
+        Notice updated = noticeDetailRepository.save(notice);
+        return updated.getNoticeId();
+    }
+
+    @Override
+    @Transactional
+    public void deleteNotice(Long id) {
+        Notice notice = noticeDetailRepository.findById(id)
+                .orElseThrow(() -> new CareerLinkException("공지사항이 존재하지 않습니다."));
+        notice.softDelete();
+    }
+
+    @Override
+    public List<FaqDto> getFaqs(Category category) {
+        List<Faq> faqs = faqRepository.findByCategory(category);
+        return FaqDto.listOf(faqs);
+    }
+
+    @Override
+    @Transactional
+    public void createFaq(FaqDto dto) {
+        Faq faq = dto.toEntity();
+        faqRepository.save(faq);
+    }
+
+    @Override
+    @Transactional
+    public void updateFaq(FaqDto dto) {
+        Faq faq = faqRepository.findById(dto.getFaqId().longValue())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 FAQ입니다."));
+        dto.updateEntity(faq);
+    }
+
+    @Override
+    @Transactional
+    public void deleteFaq(Long faqId) {
+        faqRepository.deleteById(faqId);
     }
 
     private static <T> List<T> nvl(List<T> v) { return v == null ? List.of() : v; }

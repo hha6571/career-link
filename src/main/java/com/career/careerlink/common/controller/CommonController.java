@@ -1,8 +1,14 @@
 package com.career.careerlink.common.controller;
 
 import com.career.careerlink.admin.dto.*;
+import com.career.careerlink.common.dto.FaqDto;
+import com.career.careerlink.common.dto.NoticeDetailDto;
+import com.career.careerlink.common.dto.NoticeDto;
+import com.career.careerlink.common.dto.NoticeRequestDto;
+import com.career.careerlink.common.entity.enums.Category;
 import com.career.careerlink.common.service.CommonService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,5 +54,20 @@ public class CommonController {
             @RequestParam String parentCode
     ) {
         return commonService.childrenByParent(groupCode, parentCode);
+    }
+    /**공지사항**/
+    @GetMapping("/getNotices")
+    public Page<NoticeDto> getNotices(NoticeRequestDto req) {
+        return commonService.getCommonNotices(req);
+    }
+
+    @GetMapping("/getNotice/{id}")
+    public NoticeDetailDto getNotice(@PathVariable("id") Long noticeId) {
+        return commonService.getNotice(noticeId);
+    }
+    /**자주하는질문**/
+    @GetMapping("/getFaqs")
+    public List<FaqDto> getFaqs(@RequestParam Category category) {
+        return commonService.getFaqs(category);
     }
 }
