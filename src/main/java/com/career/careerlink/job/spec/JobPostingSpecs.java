@@ -13,6 +13,10 @@ public class JobPostingSpecs {
         return (root, q, cb) -> cb.equal(root.get("isActive"), AgreementStatus.Y);
     }
 
+    public static Specification<JobPosting> isDeleted() {
+        return (root, q, cb) -> cb.equal(root.get("isDeleted"), AgreementStatus.N);
+    }
+
     public static Specification<JobPosting> keywordLike(String keyword) {
         if (keyword == null || keyword.isBlank()) return null;
         String like = "%" + keyword.trim() + "%";
@@ -36,25 +40,6 @@ public class JobPostingSpecs {
         var nonEmpty = values.stream().filter(v -> v != null && !v.isBlank()).toList();
         if (nonEmpty.isEmpty()) return null;
         return (root, q, cb) -> root.get(fieldName).in(nonEmpty);
-    }
-
-    public static Specification<JobPosting> jobFieldEq(String code) {
-        return inList("jobFieldCode", List.of(code));
-    }
-    public static Specification<JobPosting> locationEq(String code) {
-        return inList("locationCode", List.of(code));
-    }
-    public static Specification<JobPosting> empTypeEq(String code) {
-        return inList("employmentTypeCode", List.of(code));
-    }
-    public static Specification<JobPosting> educationEq(String code) {
-        return inList("educationLevelCode", List.of(code));
-    }
-    public static Specification<JobPosting> careerLevelEq(String code) {
-        return inList("careerLevelCode", List.of(code));
-    }
-    public static Specification<JobPosting> salaryEq(String code) {
-        return inList("salaryCode", List.of(code));
     }
 
     public static Specification<JobPosting> jobFieldIn(List<String> codes) {

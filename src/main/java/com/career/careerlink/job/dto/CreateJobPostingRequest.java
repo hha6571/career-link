@@ -29,4 +29,5 @@ public class CreateJobPostingRequest {
     private LocalDateTime updatedAt;
     private String createdBy;
     private String updatedBy;
+    private AgreementStatus isDeleted;
 }

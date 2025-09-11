@@ -1,11 +1,11 @@
 package com.career.careerlink.job.dto;
 
+import com.career.careerlink.users.entity.enums.AgreementStatus;
 import lombok.Builder;
 import lombok.Value;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Value
 @Builder
@@ -23,4 +23,6 @@ public class JobCardResponse {
     String salary;
     LocalDateTime postedAt;  // createdAt
     LocalDate deadline;      // applicationDeadline
+    AgreementStatus isActive;
+    AgreementStatus isDeleted;
 }

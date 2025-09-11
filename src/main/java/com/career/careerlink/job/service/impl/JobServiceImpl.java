@@ -12,6 +12,7 @@ import com.career.careerlink.job.dto.*;
 import com.career.careerlink.job.entity.JobPosting;
 import com.career.careerlink.job.repository.JobRepository;
 import com.career.careerlink.job.service.JobService;
+import com.career.careerlink.users.entity.enums.AgreementStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,6 +74,7 @@ public class JobServiceImpl implements JobService {
         posting.setIsActive(dto.getIsActive());
         posting.setCreatedBy(employerUserId);
         posting.setUpdatedBy(employerUserId);
+        posting.setIsDeleted(AgreementStatus.N);
 
         JobPosting saved = jobRepository.save(posting);
         return JobPostingResponse.from(saved);
@@ -109,6 +111,7 @@ public class JobServiceImpl implements JobService {
     public Page<JobCardResponse> getJobList(JobSearchCond c, Pageable pageable) {
         Specification<JobPosting> spec = Specification.allOf(
                 isActive(),
+                isDeleted(),
                 keywordLike(c.getKeyword()),
                 jobFieldIn(c.getJobField()),
                 locationIn(c.getLocation()),
@@ -136,6 +139,8 @@ public class JobServiceImpl implements JobService {
                 .salary(e.getSalaryCode())
                 .postedAt(e.getCreatedAt())
                 .deadline(e.getApplicationDeadline())
+                .isActive(e.getIsActive())
+                .isDeleted(e.getIsDeleted())
                 .build();
     }
 

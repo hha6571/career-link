@@ -78,6 +78,10 @@ public class JobPosting {
     @Column(name = "updated_by")
     private String updatedBy;
 
+    @Column(name = "is_deleted", columnDefinition = "ENUM('Y','N')")
+    @Enumerated(EnumType.STRING)
+    private AgreementStatus isDeleted;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

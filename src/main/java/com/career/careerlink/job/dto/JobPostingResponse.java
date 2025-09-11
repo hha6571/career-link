@@ -25,6 +25,7 @@ public class JobPostingResponse {
     private String salaryCode;
     private LocalDate applicationDeadline;
     private AgreementStatus isActive;
+    private AgreementStatus isDeleted;
 
     public static JobPostingResponse from(JobPosting posting) {
         return JobPostingResponse.builder()
@@ -40,6 +41,7 @@ public class JobPostingResponse {
                 .salaryCode(posting.getSalaryCode())
                 .applicationDeadline(posting.getApplicationDeadline())
                 .isActive(posting.getIsActive())
+                .isDeleted(posting.getIsDeleted())
                 .build();
     }
 }
