@@ -1,6 +1,9 @@
-package com.career.careerlink.common.dto;
+package com.career.careerlink.notice.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter

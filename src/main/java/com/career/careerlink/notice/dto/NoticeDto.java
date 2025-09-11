@@ -1,7 +1,7 @@
-package com.career.careerlink.common.dto;
+package com.career.careerlink.notice.dto;
 
-import com.career.careerlink.common.entity.enums.NoticeType;
-import com.career.careerlink.common.entity.enums.YN;
+import com.career.careerlink.notice.entity.enums.NoticeType;
+import com.career.careerlink.notice.entity.enums.YN;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

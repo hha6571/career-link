@@ -1,6 +1,6 @@
-package com.career.careerlink.common.repository;
+package com.career.careerlink.notice.repository;
 
-import com.career.careerlink.common.entity.Notice;
+import com.career.careerlink.notice.entity.Notice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,7 @@
-package com.career.careerlink.common.mapper;
+package com.career.careerlink.notice.mapper;
 
-import com.career.careerlink.common.dto.NoticeDto;
-import com.career.careerlink.common.dto.NoticeRequestDto;
+import com.career.careerlink.notice.dto.NoticeDto;
+import com.career.careerlink.notice.dto.NoticeRequestDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

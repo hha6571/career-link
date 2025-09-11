@@ -53,6 +53,8 @@ public class SecurityConfig {
                 ,"/job/filters"
                 ,"/job/jobList"
                 ,"/job/job-posting/detail"
+                ,"/notice/**"
+                ,"/faq/**"
         };
 
         http

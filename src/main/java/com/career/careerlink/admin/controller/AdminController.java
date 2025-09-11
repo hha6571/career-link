@@ -2,11 +2,11 @@ package com.career.careerlink.admin.controller;
 
 import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.service.AdminService;
-import com.career.careerlink.common.dto.FaqDto;
-import com.career.careerlink.common.dto.NoticeDetailDto;
-import com.career.careerlink.common.dto.NoticeDto;
-import com.career.careerlink.common.dto.NoticeRequestDto;
-import com.career.careerlink.common.entity.enums.Category;
+import com.career.careerlink.faq.dto.FaqDto;
+import com.career.careerlink.notice.dto.NoticeDetailDto;
+import com.career.careerlink.notice.dto.NoticeDto;
+import com.career.careerlink.notice.dto.NoticeRequestDto;
+import com.career.careerlink.faq.entity.enums.Category;
 import com.career.careerlink.global.response.SkipWrap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

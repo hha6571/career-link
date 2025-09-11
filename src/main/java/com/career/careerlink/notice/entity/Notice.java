@@ -1,9 +1,9 @@
-package com.career.careerlink.common.entity;
+package com.career.careerlink.notice.entity;
 
-import com.career.careerlink.common.entity.enums.NoticeType;
+import com.career.careerlink.notice.entity.enums.NoticeType;
+import com.career.careerlink.notice.entity.enums.YN;
 import jakarta.persistence.*;
 import lombok.*;
-import com.career.careerlink.common.entity.enums.YN;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 

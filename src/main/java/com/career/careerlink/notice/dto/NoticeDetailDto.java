@@ -1,9 +1,12 @@
-package com.career.careerlink.common.dto;
+package com.career.careerlink.notice.dto;
 
-import com.career.careerlink.common.entity.Notice;
-import com.career.careerlink.common.entity.enums.NoticeType;
-import com.career.careerlink.common.entity.enums.YN;
-import lombok.*;
+import com.career.careerlink.notice.entity.Notice;
+import com.career.careerlink.notice.entity.enums.NoticeType;
+import com.career.careerlink.notice.entity.enums.YN;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

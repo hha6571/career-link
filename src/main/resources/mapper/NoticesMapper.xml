@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.career.careerlink.common.mapper.NoticeMapper">
+<mapper namespace="com.career.careerlink.notice.mapper.NoticeMapper">
     <select id="getNoticeCount" resultType="long" >
         SELECT COUNT(*)
         FROM notices
@@ -18,7 +18,7 @@
         </where>
     </select>
 
-    <select id="getAdminNotices" resultType="com.career.careerlink.common.dto.NoticeDto">
+    <select id="getAdminNotices" resultType="com.career.careerlink.notice.dto.NoticeDto">
         SELECT
         notice_id    AS noticeId,
         notice_type  AS noticeType,
@@ -81,7 +81,7 @@
         </if>
     </select>
 
-    <select id="getCommonNotices" resultType="com.career.careerlink.common.dto.NoticeDto">
+    <select id="getCommonNotices" resultType="com.career.careerlink.notice.dto.NoticeDto">
         SELECT
         notice_id    AS noticeId,
         notice_type  AS noticeType,

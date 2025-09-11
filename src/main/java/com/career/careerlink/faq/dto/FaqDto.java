@@ -1,8 +1,11 @@
-package com.career.careerlink.common.dto;
+package com.career.careerlink.faq.dto;
 
-import com.career.careerlink.common.entity.Faq;
-import com.career.careerlink.common.entity.enums.Category;
-import lombok.*;
+import com.career.careerlink.faq.entity.Faq;
+import com.career.careerlink.faq.entity.enums.Category;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

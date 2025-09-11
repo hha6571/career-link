@@ -1,6 +1,6 @@
-package com.career.careerlink.common.entity;
+package com.career.careerlink.faq.entity;
 
-import com.career.careerlink.common.entity.enums.Category;
+import com.career.careerlink.faq.entity.enums.Category;
 import jakarta.persistence.*;
 import lombok.*;
 
