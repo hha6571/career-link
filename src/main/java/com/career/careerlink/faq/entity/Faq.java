@@ -38,12 +38,10 @@ public class Faq {
     @Column(name = "updated_by", length = 50)
     private String updatedBy;
 
-    @Column(name = "created_at", updatable = false,
-            columnDefinition = "datetime default CURRENT_TIMESTAMP")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at",
-            columnDefinition = "datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
