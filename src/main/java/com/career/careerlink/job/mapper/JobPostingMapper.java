@@ -1,0 +1,45 @@
+package com.career.careerlink.job.mapper;
+
+import com.career.careerlink.admin.dto.AdminJobPostingResponse;
+import com.career.careerlink.admin.dto.AdminJobPostingSearchRequest;
+import com.career.careerlink.employers.dto.EmployerJobPostingResponse;
+import com.career.careerlink.employers.dto.EmployerJobPostingSearchRequest;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+@Mapper
+public interface JobPostingMapper {
+
+    long searchForEmployerCount(
+            @Param("req") EmployerJobPostingSearchRequest req,
+            @Param("employerUserId") String employerUserId
+    );
+
+    List<EmployerJobPostingResponse> searchForEmployer(
+            @Param("req") EmployerJobPostingSearchRequest req,
+            @Param("employerUserId") String employerUserId,
+            @Param("offset") int offset,
+            @Param("limit") int limit,
+            @Param("sort") String sort,
+            @Param("direction") String direction
+    );
+
+    int deleteBulkByEmployer(@Param("targetJobPostingIds") List<String> targetJobPostingIds,
+                             @Param("employerUserId") String employerUserId);
+
+    long searchForAdminCount(
+            @Param("req") AdminJobPostingSearchRequest req
+    );
+
+    List<AdminJobPostingResponse> searchForAdmin(
+            @Param("req") AdminJobPostingSearchRequest req,
+            @Param("offset") int offset,
+            @Param("limit") int limit,
+            @Param("sort") String sort,
+            @Param("direction") String direction
+    );
+
+    int deleteBulkByAdmin(@Param("targetJobPostingIds") List<String> targetJobPostingIds);
+}

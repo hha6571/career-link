@@ -3,6 +3,7 @@ package com.career.careerlink.admin.controller;
 import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.service.AdminService;
 import com.career.careerlink.faq.dto.FaqDto;
+import com.career.careerlink.job.service.JobPostingService;
 import com.career.careerlink.notice.dto.NoticeDetailDto;
 import com.career.careerlink.notice.dto.NoticeDto;
 import com.career.careerlink.notice.dto.NoticeRequestDto;
@@ -23,6 +24,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final JobPostingService jobPostingService;
 
     @GetMapping("/emp/requests")
     public List<AdminEmployerRequestDto> getAllEmployers(@ModelAttribute AdminEmployerRequestDto searchRequest) {
@@ -115,5 +117,22 @@ public class AdminController {
     @DeleteMapping("/deleteFaq/{faqId}")
     public void deleteFaq(@PathVariable Long faqId) {
         adminService.deleteFaq(faqId);
+    }
+
+    /**
+     * 기업공고 리스트 조회
+     */
+    @GetMapping("/job-postings/manage")
+    public Page<AdminJobPostingResponse> getJobPostingList(AdminJobPostingSearchRequest req) {
+        return jobPostingService.searchForAdmin(req);
+    }
+
+    /**
+     * 기업공고 삭제처리 (다건)
+     */
+    @SkipWrap
+    @PostMapping("/job-postings/delete-bulk")
+    public int jobPostingDeleteBulk(@RequestBody List<String> targetJobPostingIds) {
+        return jobPostingService.deleteBulkByAdmin(targetJobPostingIds);
     }
 }

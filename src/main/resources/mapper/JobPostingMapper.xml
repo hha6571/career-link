@@ -1,0 +1,202 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.career.careerlink.job.mapper.JobPostingMapper">
+
+    <sql id="OrderByClause">
+        ORDER BY
+        <choose>
+            <when test="sort == 'title'">                jp.title</when>
+            <when test="sort == 'companyName'">          em.company_name</when>
+            <when test="sort == 'employerId'">           jp.employer_id</when>
+            <when test="sort == 'applicationDeadline'">  jp.application_deadline</when>
+            <when test="sort == 'isActive'">             jp.is_active</when>
+            <when test="sort == 'createdAt'">            jp.created_at</when>
+            <when test="sort == 'createdBy'">            jp.created_by</when>
+            <when test="sort == 'isDeleted'">            jp.is_deleted</when>
+            <otherwise>                                  jp.job_posting_id</otherwise>
+        </choose>
+        <choose>
+            <when test="direction == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- 조회 컬럼 목록 -->
+    <sql id="BaseColumns">
+        jp.job_posting_id       AS jobPostingId,
+        jp.title                AS title,
+        jp.employer_id          AS employerId,
+        em.company_name         AS companyName,
+        jp.application_deadline AS applicationDeadline,
+        jp.is_active            AS isActive,
+        jp.created_at           AS createdAt,
+        jp.updated_at           AS updatedAt,
+        jp.is_deleted           AS isDeleted,
+        jp.created_by           AS createdByRaw,
+        jp.updated_by           AS updatedByRaw,
+
+        CASE
+          WHEN jp.created_by LIKE 'ADMIN%' THEN '관리자'
+          WHEN jp.created_by LIKE 'EMU%'   THEN CONCAT(euc.user_name, ' (', euc.employer_login_id, ')')
+          WHEN jp.created_by IS NULL OR jp.created_by = '' THEN '-'
+          ELSE jp.created_by
+        END AS createdBy,
+
+        CASE
+          WHEN jp.updated_by LIKE 'ADMIN%' THEN '관리자'
+          WHEN jp.updated_by LIKE 'EMU%'   THEN CONCAT(euu.user_name, ' (', euu.employer_login_id, ')')
+          WHEN jp.updated_by IS NULL OR jp.updated_by = '' THEN '-'
+          ELSE jp.updated_by
+        END AS updatedBy
+    </sql>
+
+    <!-- 생성자/수정자 표시를 위한 조인 -->
+    <sql id="DisplayNameJoins">
+        LEFT JOIN employer_users euc
+               ON jp.created_by LIKE 'EMU%'
+              AND euc.employer_user_id = jp.created_by
+              AND euc.employer_id      = jp.employer_id
+        LEFT JOIN employer_users euu
+               ON jp.updated_by LIKE 'EMU%'
+              AND euu.employer_user_id = jp.updated_by
+              AND euu.employer_id      = jp.employer_id
+    </sql>
+
+    <sql id="EmployerJoin">
+        LEFT JOIN employers em
+           ON em.employer_id = jp.employer_id
+    </sql>
+
+    <select id="searchForEmployer" resultType="com.career.careerlink.employers.dto.EmployerJobPostingResponse">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM job_postings jp
+        JOIN employer_users me
+        ON me.employer_user_id = #{employerUserId}
+        AND me.employer_id      = jp.employer_id
+        AND me.is_approved      = 'Y'       <!-- 승인된 사용자만 가능 -->
+
+        <include refid="EmployerJoin"/>
+        <include refid="DisplayNameJoins"/>
+
+        <where>
+            AND jp.is_deleted = 'N'
+
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                jp.title LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')  <!-- 생성자(명/로그인아이디) -->
+                OR euu.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euu.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')  <!-- 수정자(명/로그인아이디) -->
+                OR DATE_FORMAT(jp.application_deadline, '%Y%m%d') LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+        </where>
+        <include refid="OrderByClause"/>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="searchForEmployerCount" resultType="long">
+        SELECT COUNT(*)
+        FROM job_postings jp
+        JOIN employer_users me
+        ON me.employer_user_id = #{employerUserId}
+        AND me.employer_id      = jp.employer_id
+        AND me.is_approved      = 'Y'
+        <include refid="EmployerJoin"/>
+        <include refid="DisplayNameJoins"/>
+        <where>
+            AND jp.is_deleted = 'N'
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                jp.title LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euu.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euu.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR DATE_FORMAT(jp.application_deadline, '%Y%m%d') LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <update id="deleteBulkByEmployer">
+        UPDATE job_postings jp
+        JOIN employer_users me
+        ON me.employer_user_id = #{employerUserId}
+        AND me.employer_id      = jp.employer_id
+        AND me.is_approved      = 'Y'
+        SET jp.is_deleted = 'Y',
+        jp.updated_at = CURRENT_TIMESTAMP,
+        jp.updated_by = #{employerUserId}
+        WHERE jp.is_deleted = 'N'
+        AND jp.job_posting_id IN
+        <foreach collection="targetJobPostingIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="searchForAdmin" resultType="com.career.careerlink.admin.dto.AdminJobPostingResponse">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM job_postings jp
+
+        <include refid="EmployerJoin"/>
+        <include refid="DisplayNameJoins"/>
+
+        <where>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                jp.title LIKE CONCAT('%', #{req.keyword}, '%')
+                OR em.company_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR jp.employer_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR jp.created_by LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euu.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euu.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR DATE_FORMAT(jp.application_deadline, '%Y%m%d') LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+        </where>
+        <include refid="OrderByClause"/>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="searchForAdminCount" resultType="long">
+        SELECT COUNT(*)
+        FROM job_postings jp
+        <include refid="EmployerJoin"/>
+        <include refid="DisplayNameJoins"/>
+        <where>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                jp.title LIKE CONCAT('%', #{req.keyword}, '%')
+                OR em.company_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR jp.employer_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR jp.created_by LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euc.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euu.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR euu.employer_login_id LIKE CONCAT('%', #{req.keyword}, '%')
+                OR DATE_FORMAT(jp.application_deadline, '%Y%m%d') LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <update id="deleteBulkByAdmin">
+        UPDATE job_postings
+        SET is_deleted = 'Y',
+        updated_at = CURRENT_TIMESTAMP,
+        updated_by = 'ADMIN_SYSTEM'
+        WHERE is_deleted = 'N'
+        AND job_posting_id IN
+        <foreach collection="targetJobPostingIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

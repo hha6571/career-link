@@ -1,8 +1,12 @@
 package com.career.careerlink.job.service.impl;
 
+import com.career.careerlink.admin.dto.AdminJobPostingResponse;
+import com.career.careerlink.admin.dto.AdminJobPostingSearchRequest;
 import com.career.careerlink.admin.dto.CommonCodeDto;
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.common.service.CommonService;
+import com.career.careerlink.employers.dto.EmployerJobPostingResponse;
+import com.career.careerlink.employers.dto.EmployerJobPostingSearchRequest;
 import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.employers.entity.EmployerUsers;
 import com.career.careerlink.employers.repository.EmployerRepository;
@@ -10,11 +14,14 @@ import com.career.careerlink.employers.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.job.dto.*;
 import com.career.careerlink.job.entity.JobPosting;
+import com.career.careerlink.job.mapper.JobPostingMapper;
 import com.career.careerlink.job.repository.JobRepository;
-import com.career.careerlink.job.service.JobService;
+import com.career.careerlink.job.service.JobPostingService;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -24,17 +31,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 import static com.career.careerlink.job.spec.JobPostingSpecs.*;
 
 @Service
 @RequiredArgsConstructor
-public class JobServiceImpl implements JobService {
+public class JobPostingServiceImpl implements JobPostingService {
 
     private final EmployerUserRepository employerUserRepository;
     private final EmployerRepository employerRepository;
     private final JobRepository jobRepository;
     private final CommonService commonCodeService;
+    private final JobPostingMapper jobPostingMapper;
+
 
     private static final String G_JOB_FIELD = "JOB_FIELD";
     private static final String G_LOCATION  = "LOCATION";
@@ -185,5 +196,70 @@ public class JobServiceImpl implements JobService {
         posting.setUpdatedAt(LocalDateTime.now());
 
         jobRepository.save(posting);
+    }
+
+    @Override
+    public Page<EmployerJobPostingResponse> searchForEmployer(EmployerJobPostingSearchRequest req, String employerUserId) {
+        int page = Optional.ofNullable(req.getPage()).orElse(0);
+        int size = Optional.ofNullable(req.getSize()).orElse(10);
+
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        int offset = safePage * safeSize;
+
+        // 정렬 방향 보정
+        String direction = Optional.ofNullable(req.getDirection())
+                .orElse("asc")
+                .toUpperCase(Locale.ROOT);
+        direction = "DESC".equals(direction) ? "DESC" : "ASC";
+
+        // 정렬 필드 보정(화이트리스트 키)
+        String sort = Optional.ofNullable(req.getSort()).orElse("jobPostingId");
+
+        long total = jobPostingMapper.searchForEmployerCount(req, employerUserId);
+        List<EmployerJobPostingResponse> rows = jobPostingMapper.searchForEmployer(req, employerUserId, offset, safeSize, sort, direction);
+
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize), total);
+    }
+
+    @Override
+    @Transactional
+    public int deleteBulkByEmployer(List<String> targetJobPostingIds, String employerUserId){
+        return jobPostingMapper.deleteBulkByEmployer(
+                targetJobPostingIds,
+                employerUserId
+        );
+    }
+
+    @Override
+    public Page<AdminJobPostingResponse> searchForAdmin(AdminJobPostingSearchRequest req) {
+        int page = Optional.ofNullable(req.getPage()).orElse(0);
+        int size = Optional.ofNullable(req.getSize()).orElse(10);
+
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        int offset = safePage * safeSize;
+
+        // 정렬 방향 보정
+        String direction = Optional.ofNullable(req.getDirection())
+                .orElse("asc")
+                .toUpperCase(Locale.ROOT);
+        direction = "DESC".equals(direction) ? "DESC" : "ASC";
+
+        // 정렬 필드 보정(화이트리스트 키)
+        String sort = Optional.ofNullable(req.getSort()).orElse("jobPostingId");
+
+        long total = jobPostingMapper.searchForAdminCount(req);
+        List<AdminJobPostingResponse> rows = jobPostingMapper.searchForAdmin(req, offset, safeSize, sort, direction);
+
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize), total);
+    }
+
+    @Override
+    @Transactional
+    public int deleteBulkByAdmin(List<String> targetJobPostingIds){
+        return jobPostingMapper.deleteBulkByAdmin(
+                targetJobPostingIds
+        );
     }
 }

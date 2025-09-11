@@ -4,6 +4,7 @@ import com.career.careerlink.employers.dto.*;
 import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.employers.service.EmployerService;
 import com.career.careerlink.global.response.SkipWrap;
+import com.career.careerlink.job.service.JobPostingService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class EmployerController {
 
     private final EmployerService employerService;
+    private final JobPostingService jobPostingService;
 
     /**
      * 기업중복방지 체크
@@ -108,5 +110,24 @@ public class EmployerController {
     public int approveBulk(@RequestBody List<String> targetEmployerUserIds, Principal principal) {
         String employerUserId = principal.getName();
         return employerService.approveBulk(targetEmployerUserIds, employerUserId);
+    }
+
+    /**
+     * 기업공고 리스트 조회
+     */
+    @GetMapping("/job-postings/manage")
+    public Page<EmployerJobPostingResponse> getJobPostingList(EmployerJobPostingSearchRequest req, Principal principal) {
+        String employerUserId = principal.getName();
+        return jobPostingService.searchForEmployer(req, employerUserId);
+    }
+
+    /**
+     * 기업공고 삭제처리 (다건)
+     */
+    @SkipWrap
+    @PostMapping("/job-postings/delete-bulk")
+    public int jobPostingDeleteBulk(@RequestBody List<String> targetJobPostingIds, Principal principal) {
+        String employerUserId = principal.getName();
+        return jobPostingService.deleteBulkByEmployer(targetJobPostingIds, employerUserId);
     }
 }

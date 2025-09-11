@@ -1,7 +1,7 @@
 package com.career.careerlink.job.controller;
 
 import com.career.careerlink.job.dto.*;
-import com.career.careerlink.job.service.JobService;
+import com.career.careerlink.job.service.JobPostingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,8 +18,8 @@ import java.util.List;
 @RequestMapping("/job")
 @RequiredArgsConstructor
 @Validated
-public class JobController {
-    private final JobService jobService;
+public class JobPostingController {
+    private final JobPostingService jobService;
 
     // 필터 조회
     @GetMapping("/filters")
