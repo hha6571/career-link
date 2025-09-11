@@ -2,8 +2,10 @@ package com.career.careerlink.applicant.controller;
 
 import com.career.careerlink.applicant.dto.ApplicantDto;
 import com.career.careerlink.applicant.dto.ApplicantRequestPassWordDto;
+import com.career.careerlink.applicant.dto.SignupRequestDto;
 import com.career.careerlink.applicant.service.ApplicantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,10 +15,19 @@ public class ApplicantController {
 
     private final ApplicantService applicantService;
 
+  /**
+     * 일반 회원가입
+     */
+    @PostMapping("/signup")
+    public ResponseEntity<Void> signup(@RequestBody SignupRequestDto dto) {
+        applicantService.signup(dto);
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * 계정관리
      */
-    @GetMapping("/account/getProfile")
+  @GetMapping("/account/getProfile")
     public ApplicantDto getProfile() {
         return applicantService.getProfile();
     }

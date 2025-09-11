@@ -80,6 +80,9 @@ public class Applicant {
 
     @PrePersist
     public void onCreate() {
+        if (this.userStatus == null) {
+            this.userStatus = UserStatus.ACTIVE;
+        }
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }

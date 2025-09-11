@@ -69,12 +69,6 @@ public class UserController {
         return userVerificationService.verifyEmailCode(request.userName(), request.email(), request.code());
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@RequestBody SignupRequestDto dto) {
-        userService.signup(dto);
-        return ResponseEntity.ok().build();
-    }
-
 //    @PostMapping("/login")
 //    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
 //        return ResponseEntity.ok(userService.login(dto, response));

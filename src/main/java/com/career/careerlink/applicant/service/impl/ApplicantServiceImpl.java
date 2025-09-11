@@ -2,10 +2,12 @@ package com.career.careerlink.applicant.service.impl;
 
 import com.career.careerlink.applicant.dto.ApplicantDto;
 import com.career.careerlink.applicant.dto.ApplicantRequestPassWordDto;
+import com.career.careerlink.applicant.dto.SignupRequestDto;
 import com.career.careerlink.applicant.entity.Applicant;
 import com.career.careerlink.applicant.repository.ApplicantRepository;
 import com.career.careerlink.applicant.service.ApplicantService;
 import com.career.careerlink.global.exception.CareerLinkException;
+import com.career.careerlink.global.util.UserIdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,34 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     private final ApplicantRepository applicantRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public void signup(SignupRequestDto dto) {
+        String encodedPassword = passwordEncoder.encode(dto.getPasswordHash());
+        String generatedUserId = UserIdGenerator.generate("USR");
+
+        Applicant newApplicant = Applicant.builder()
+                .userId(generatedUserId)
+                .loginId(dto.getLoginId())
+                .passwordHash(encodedPassword)
+                .userName(dto.getUserName())
+                .phoneNumber(dto.getPhoneNumber())
+                .birthDate(dto.getBirthDate())
+                .gender(dto.getGender())
+                .userType(dto.getUserType())
+                .email(dto.getEmail())
+                .lastLoginAt(dto.getLastLoginAt())
+                .dormantAt(dto.getDormantAt())
+                .agreeTerms(dto.getAgreeTerms())
+                .agreePrivacy(dto.getAgreePrivacy())
+                .agreeMarketing(dto.getAgreeMarketing())
+                .userStatus(dto.getUserStatus())
+                .createdAt(dto.getCreatedAt())
+                .updatedAt(dto.getUpdatedAt())
+                .build();
+
+        applicantRepository.save(newApplicant);
+    }
 
     @Override
     public ApplicantDto getProfile() {

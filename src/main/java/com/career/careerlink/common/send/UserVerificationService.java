@@ -2,10 +2,8 @@ package com.career.careerlink.common.send;
 
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.global.exception.CareerLinkException;
-import com.career.careerlink.users.entity.Applicant;
 import com.career.careerlink.users.entity.LoginUser;
 import com.career.careerlink.users.repository.LoginUserRepository;
-import com.career.careerlink.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.model.Message;

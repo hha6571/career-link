@@ -1,17 +1,16 @@
 package com.career.careerlink.users.service.impl;
 
 import com.career.careerlink.admin.repository.AdminRepository;
+import com.career.careerlink.applicant.entity.Applicant;
+import com.career.careerlink.applicant.repository.ApplicantRepository;
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.employers.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.users.dto.LoginRequestDto;
-import com.career.careerlink.users.dto.SignupRequestDto;
 import com.career.careerlink.users.dto.TokenRequestDto;
 import com.career.careerlink.users.dto.TokenResponse;
 import com.career.careerlink.users.entity.LoginUser;
-import com.career.careerlink.users.entity.Applicant;
 import com.career.careerlink.users.repository.LoginUserRepository;
-import com.career.careerlink.users.repository.UserRepository;
 import com.career.careerlink.users.service.UserService;
 import com.career.careerlink.global.redis.RedisUtil;
 import com.career.careerlink.global.security.JwtTokenProvider;
@@ -21,7 +20,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.RedisTemplate;
-import com.career.careerlink.global.util.UserIdGenerator;
 
 import java.time.LocalDateTime;
 
@@ -29,7 +27,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final ApplicantRepository applicantRepository;
     private final LoginUserRepository loginUserRepository;
     private final EmployerUserRepository employerUserRepository;
     private final AdminRepository adminRepository;
@@ -41,34 +39,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isLoginIdDuplicate(String loginId) {
         return loginUserRepository.existsByLoginId(loginId);
-    }
-
-    @Override
-    public void signup(SignupRequestDto dto) {
-        String encodedPassword = passwordEncoder.encode(dto.getPasswordHash());
-        String generatedUserId = UserIdGenerator.generate("USR");
-
-        Applicant newApplicant = Applicant.builder()
-                .userId(generatedUserId)
-                .loginId(dto.getLoginId())
-                .password(encodedPassword)
-                .userName(dto.getUserName())
-                .phoneNumber(dto.getPhoneNumber())
-                .birthDate(dto.getBirthDate())
-                .gender(dto.getGender())
-                .userType(dto.getUserType())
-                .email(dto.getEmail())
-                .lastLoginAt(dto.getLastLoginAt())
-                .dormantAt(dto.getDormantAt())
-                .agreeTerms(dto.getAgreeTerms())
-                .agreePrivacy(dto.getAgreePrivacy())
-                .agreeMarketing(dto.getAgreeMarketing())
-                .userStatus(dto.getUserStatus())
-                .createdAt(dto.getCreatedAt())
-                .updatedAt(dto.getUpdatedAt())
-                .build();
-
-        userRepository.save(newApplicant);
     }
 
     @Override
@@ -159,10 +129,10 @@ public class UserServiceImpl implements UserService {
 
         switch (user.getRole()) {
             case "USER" -> {
-                userRepository.findById(user.getUserPk())
+                applicantRepository.findById(user.getUserPk())
                         .ifPresent(applicant -> {
                             applicant.setLastLoginAt(LocalDateTime.now());
-                            userRepository.save(applicant);
+                            applicantRepository.save(applicant);
                         });
             }
             case "EMP" -> {
@@ -245,13 +215,13 @@ public class UserServiceImpl implements UserService {
             throw new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "비밀번호 재설정 토큰이 유효하지 않거나 만료되었습니다.");
         }
 
-        Applicant applicant = userRepository.findByUserId(userIdStr)
+        Applicant applicant = applicantRepository.findByUserId(userIdStr)
                 .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "회원 정보를 찾을 수 없습니다."));
 
         // 비밀번호 암호화 후 저장
         String encodedPassword = passwordEncoder.encode(newPassword);
-        applicant.setPassword(encodedPassword);
-        userRepository.save(applicant);
+        applicant.setPasswordHash(encodedPassword);
+        applicantRepository.save(applicant);
 
         // 토큰 삭제 (1회 사용 원칙)
         redisTemplate.delete("resetPwdToken:" + resetToken);
