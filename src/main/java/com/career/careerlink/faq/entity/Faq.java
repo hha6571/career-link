@@ -3,6 +3,8 @@ package com.career.careerlink.faq.entity;
 import com.career.careerlink.faq.entity.enums.Category;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -23,8 +25,8 @@ public class Faq {
     @Column(nullable = false, length = 500)
     private String question;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(name = "answer", nullable = false, columnDefinition = "LONGTEXT")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String answer;
 
     @Enumerated(EnumType.STRING)
