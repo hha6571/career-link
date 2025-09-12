@@ -1,7 +1,7 @@
 package com.career.careerlink.applicant.entity;
 
 import com.career.careerlink.applicant.entity.enums.UserStatus;
-import com.career.careerlink.applicant.entity.enums.YN;
+import com.career.careerlink.applicant.entity.enums.YnType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -58,15 +58,15 @@ public class Applicant {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "agree_terms", columnDefinition = "ENUM('Y','N') DEFAULT 'Y'")
-    private YN agreeTerms = YN.Y;
+    private YnType agreeTerms = YnType.Y;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "agree_privacy", columnDefinition = "ENUM('Y','N') DEFAULT 'Y'")
-    private YN agreePrivacy = YN.Y;
+    private YnType agreePrivacy = YnType.Y;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "agree_marketing", columnDefinition = "ENUM('Y','N') DEFAULT 'N'")
-    private YN agreeMarketing = YN.N;
+    private YnType agreeMarketing = YnType.N;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_status", columnDefinition = "ENUM('ACTIVE','DORMANT','WITHDRAWN') DEFAULT 'ACTIVE'")

@@ -1,8 +1,8 @@
 package com.career.careerlink.applicant.service;
 
-import com.career.careerlink.applicant.dto.ApplicantDto;
-import com.career.careerlink.applicant.dto.ApplicantRequestPassWordDto;
-import com.career.careerlink.applicant.dto.SignupRequestDto;
+import com.career.careerlink.applicant.dto.*;
+
+import java.util.List;
 
 public interface ApplicantService {
     void signup(SignupRequestDto dto);
@@ -10,4 +10,9 @@ public interface ApplicantService {
     ApplicantDto updateProfile(ApplicantDto dto);
     void changePassword(ApplicantRequestPassWordDto requestPassWordDto);
     void withdraw();
+    ResumeDto createResume(ResumeFormDto dto);
+    ResumeDto getResume(Integer resumeId);
+    List<ResumeDto> getMyResumes();
+    ResumeDto updateResume(Integer resumeId, ResumeFormDto dto);
+    void deleteResume(Integer resumeId);
 }

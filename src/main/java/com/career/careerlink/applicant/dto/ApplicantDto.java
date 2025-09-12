@@ -2,7 +2,7 @@ package com.career.careerlink.applicant.dto;
 
 import com.career.careerlink.applicant.entity.Applicant;
 import com.career.careerlink.applicant.entity.enums.UserStatus;
-import com.career.careerlink.applicant.entity.enums.YN;
+import com.career.careerlink.applicant.entity.enums.YnType;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -26,9 +26,9 @@ public class ApplicantDto {
     private LocalDateTime lastLoginAt;
     private LocalDateTime dormantAt;
 
-    private YN agreeTerms;
-    private YN agreePrivacy;
-    private YN agreeMarketing;
+    private YnType agreeTerms;
+    private YnType agreePrivacy;
+    private YnType agreeMarketing;
     private UserStatus userStatus;
 
     private LocalDateTime createdAt;

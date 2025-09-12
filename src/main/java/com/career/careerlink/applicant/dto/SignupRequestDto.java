@@ -1,6 +1,6 @@
 package com.career.careerlink.applicant.dto;
 
-import com.career.careerlink.applicant.entity.enums.YN;
+import com.career.careerlink.applicant.entity.enums.YnType;
 import com.career.careerlink.applicant.entity.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -30,9 +30,9 @@ public class SignupRequestDto {
     private String email;
     private LocalDateTime lastLoginAt;
     private LocalDateTime dormantAt;
-    private YN agreeTerms;
-    private YN agreePrivacy;
-    private YN agreeMarketing;
+    private YnType agreeTerms;
+    private YnType agreePrivacy;
+    private YnType agreeMarketing;
     private UserStatus userStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
