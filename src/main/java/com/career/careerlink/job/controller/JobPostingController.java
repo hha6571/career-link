@@ -19,12 +19,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 public class JobPostingController {
-    private final JobPostingService jobService;
+    private final JobPostingService jobPostingService;
 
     // 필터 조회
     @GetMapping("/filters")
     public JobFiltersResponse filters() {
-        return jobService.getFilters();
+        return jobPostingService.getFilters();
     }
 
     //등록된 공고 리스트 조회
@@ -50,7 +50,7 @@ public class JobPostingController {
                 .exp(exp)
                 .sal(sal)
                 .build();
-        return jobService.getJobList(cond, pageable);
+        return jobPostingService.getJobList(cond, pageable);
     }
 
     // 공고등록
@@ -61,17 +61,25 @@ public class JobPostingController {
             Authentication authentication) {
 
         String employerUserId = authentication.getName();
-        return jobService.saveJobPosting(employerUserId, req);
+        return jobPostingService.saveJobPosting(employerUserId, req);
     }
 
     @GetMapping("/job-posting/detail")
     public JobPostingResponse detailJobPosting(@RequestParam(name = "id") int jobPostingId){
-        return jobService.detailJobPosting(jobPostingId);
+        return jobPostingService.detailJobPosting(jobPostingId);
     }
 
     @PreAuthorize("hasAnyRole('EMP','ADMIN')")
     @PutMapping("/job-posting/update")
     public void update(@RequestParam("id") Integer jobPostingId,@Valid @RequestBody UpdateJobPostingRequest req) {
-        jobService.updateJobPosting(jobPostingId, req);
+        jobPostingService.updateJobPosting(jobPostingId, req);
+    }
+
+    @GetMapping("/job-postings/hot")
+    public HotDtos.HotResponse hot(
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String cursor
+    ) {
+        return jobPostingService.getHot(new HotDtos.HotRequest(limit, cursor));
     }
 }

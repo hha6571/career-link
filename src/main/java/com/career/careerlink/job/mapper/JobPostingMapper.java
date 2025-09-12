@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface JobPostingMapper {
@@ -42,4 +43,10 @@ public interface JobPostingMapper {
     );
 
     int deleteBulkByAdmin(@Param("targetJobPostingIds") List<String> targetJobPostingIds);
+
+    List<Map<String, Object>> selectHotJobs(
+            @Param("limit") int limit,
+            @Param("cursorViewCount") Integer cursorViewCount,
+            @Param("cursorId") Integer cursorId
+    );
 }

@@ -30,9 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 import static com.career.careerlink.job.spec.JobPostingSpecs.*;
 
@@ -45,7 +43,6 @@ public class JobPostingServiceImpl implements JobPostingService {
     private final JobRepository jobRepository;
     private final CommonService commonCodeService;
     private final JobPostingMapper jobPostingMapper;
-
 
     private static final String G_JOB_FIELD = "JOB_FIELD";
     private static final String G_LOCATION  = "LOCATION";
@@ -143,6 +140,7 @@ public class JobPostingServiceImpl implements JobPostingService {
                 .employerId(e.getEmployerId())
                 .companyName(e.getEmployer() != null ? e.getEmployer().getCompanyName() : null)
                 .companyLogoUrl(e.getEmployer() != null ? e.getEmployer().getCompanyLogoUrl() : null)
+                .jobField(e.getJobFieldCode())
                 .location(e.getLocationCode())
                 .employmentType(e.getEmploymentTypeCode())
                 .careerLevel(e.getCareerLevelCode())
@@ -156,8 +154,10 @@ public class JobPostingServiceImpl implements JobPostingService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public JobPostingResponse detailJobPosting(int jobPostingId) {
+        jobRepository.incrementViewCount(jobPostingId);
+
         return jobRepository.findDetailJobPosting(jobPostingId)
                 .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "해당 공고를 찾을 수 없습니다."));
     }
@@ -261,5 +261,53 @@ public class JobPostingServiceImpl implements JobPostingService {
         return jobPostingMapper.deleteBulkByAdmin(
                 targetJobPostingIds
         );
+    }
+
+    private record HotCursor(int view, int id) {}
+
+    private HotCursor decode(String cursor) {
+        if (cursor == null || cursor.isBlank()) return null;
+        try {
+            if (cursor.contains("_")) {
+                String[] p = cursor.split("_");
+                return new HotCursor(Integer.parseInt(p[0]), Integer.parseInt(p[1]));
+            }
+            String raw = new String(Base64.getUrlDecoder().decode(cursor));
+            String[] p = raw.split("_");
+            return new HotCursor(Integer.parseInt(p[0]), Integer.parseInt(p[1]));
+        } catch (Exception e) { return null; }
+    }
+
+
+    private String encode(HotCursor c) {
+        String raw = c.view + "_" + c.id;
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(raw.getBytes());
+    }
+
+
+    public HotDtos.HotResponse getHot(HotDtos.HotRequest req) {
+        int limit = (req.limit() == null || req.limit() <= 0) ? 16 : Math.min(req.limit(), 50);
+        var c = decode(req.cursor());
+
+
+        List<Map<String,Object>> rows = jobPostingMapper.selectHotJobs(
+                limit,
+                c != null ? c.view : null,
+                c != null ? c.id : null
+        );
+
+
+        var items = new ArrayList<HotDtos.HotItem>(rows.size());
+        for (var r : rows) items.add(HotDtos.HotItem.fromMap(r));
+
+
+        String nextCursor = null;
+        boolean hasMore = false;
+        if (!items.isEmpty()) {
+            var last = items.get(items.size()-1);
+            nextCursor = encode(new HotCursor(last.viewCount(), last.jobId()));
+            hasMore = true;
+        }
+        return new HotDtos.HotResponse(items, nextCursor, hasMore);
     }
 }

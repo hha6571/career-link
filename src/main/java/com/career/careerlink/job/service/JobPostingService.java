@@ -20,9 +20,12 @@ public interface JobPostingService {
     JobPostingResponse detailJobPosting(@RequestParam int jobPostingId);
     void updateJobPosting(Integer jobPostingId, @Valid UpdateJobPostingRequest req);
 
-    // (기업) 공고조회 및 공고 게시글 삭제
+    // (기업/관리자) 공고조회 및 공고 게시글 삭제
     Page<EmployerJobPostingResponse> searchForEmployer(EmployerJobPostingSearchRequest req, String employerUserId);
     Page<AdminJobPostingResponse> searchForAdmin(AdminJobPostingSearchRequest req);
     int deleteBulkByEmployer(@NotBlank List<String>targetJobPostingIds, String employerUserId);
     int deleteBulkByAdmin(@NotBlank List<String>targetJobPostingIds);
+    
+    // HOT 100 공고 조회
+    HotDtos.HotResponse getHot(HotDtos.HotRequest hotRequest);
 }

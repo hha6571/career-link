@@ -64,6 +64,9 @@ public class JobPosting {
     @Enumerated(EnumType.STRING)
     private AgreementStatus isActive;
 
+    @Column(name = "view_count")
+    private Integer viewCount;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

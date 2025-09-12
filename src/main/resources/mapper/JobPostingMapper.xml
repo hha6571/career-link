@@ -199,4 +199,72 @@
         </foreach>
     </update>
 
+
+    <select id="selectHotJobs" resultType="map">
+        SELECT
+        h.job_posting_id AS jobId,
+        h.title AS title,
+        e.company_name AS companyName,
+        e.company_logo_url AS companyLogoUrl,
+
+        COALESCE(jfc.code_name,  h.job_field_code)         AS jobFiled,
+        COALESCE(loc.code_name,  h.location_code)          AS location,
+        COALESCE(emt.code_name,  h.employment_type_code)   AS employmentType,
+        COALESCE(car.code_name,  h.career_level_code)      AS experience,
+        COALESCE(edu.code_name,  h.education_level_code)   AS education,
+        COALESCE(sal.code_name,  h.salary_code)            AS salary,
+
+        h.application_deadline AS deadline,
+        h.view_count AS viewCount
+        FROM (
+        SELECT
+            jp.job_posting_id,
+            jp.employer_id,
+            jp.title,
+            jp.job_field_code,
+            jp.location_code,
+            jp.employment_type_code,
+            jp.education_level_code,
+            jp.career_level_code,
+            jp.salary_code,
+            jp.application_deadline,
+            jp.view_count
+        FROM job_postings jp
+        WHERE jp.is_active = 'Y'
+            AND jp.is_deleted = 'N'
+        ORDER BY jp.view_count DESC, jp.job_posting_id DESC
+        LIMIT 100
+        ) h
+        JOIN employers e ON e.employer_id = h.employer_id
+
+        LEFT JOIN common_codes jfc
+        ON jfc.group_code = 'JOB_FIELD'
+        AND jfc.code       = h.job_field_code
+        LEFT JOIN common_codes loc
+        ON loc.group_code = 'LOCATION'
+        AND loc.code       = h.location_code
+        LEFT JOIN common_codes emt
+        ON emt.group_code = 'EMPLOYMENT_TYPE'
+        AND emt.code       = h.employment_type_code
+        LEFT JOIN common_codes edu
+        ON edu.group_code = 'EDUCATION_LEVEL'
+        AND edu.code       = h.education_level_code
+        LEFT JOIN common_codes car
+        ON car.group_code = 'CAREER_LEVEL'
+        AND car.code       = h.career_level_code
+        LEFT JOIN common_codes sal
+        ON sal.group_code = 'SALARY'
+        AND sal.code       = h.salary_code
+        <!-- Keyset 커서 조건 -->
+        <if test="cursorViewCount != null and cursorId != null">
+        WHERE
+            (
+            h.view_count &lt; #{cursorViewCount}
+            OR (h.view_count = #{cursorViewCount} AND h.job_posting_id &lt; #{cursorId})
+            )
+        </if>
+
+        ORDER BY h.view_count DESC, h.job_posting_id DESC
+        LIMIT #{limit}
+    </select>
 </mapper>
