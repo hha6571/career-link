@@ -2,7 +2,6 @@ package com.career.careerlink.global.security;
 
 import com.career.careerlink.users.entity.LoginUser;
 import com.career.careerlink.users.repository.LoginUserRepository;
-import com.career.careerlink.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
