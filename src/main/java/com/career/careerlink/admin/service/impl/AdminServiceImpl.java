@@ -2,9 +2,13 @@ package com.career.careerlink.admin.service.impl;
 
 import com.career.careerlink.admin.dto.*;
 import com.career.careerlink.admin.entity.Menu;
+import com.career.careerlink.admin.entity.enums.Granularity;
 import com.career.careerlink.admin.mapper.CommonCodeMapper;
+import com.career.careerlink.admin.mapper.StatsMapper;
 import com.career.careerlink.admin.mapper.UsersMapper;
+import com.career.careerlink.admin.repository.AdminRepository;
 import com.career.careerlink.admin.repository.MenuRepository;
+import com.career.careerlink.admin.repository.StatsRepository;
 import com.career.careerlink.admin.service.AdminService;
 import com.career.careerlink.admin.spec.EmployerSpecification;
 import com.career.careerlink.faq.dto.FaqDto;
@@ -32,6 +36,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,6 +55,7 @@ public class AdminServiceImpl implements AdminService {
     private final NoticeDetailRepository noticeDetailRepository;
     private final S3Service s3Service;
     private final FaqRepository faqRepository;
+    private final StatsMapper statsMapper;
 
     @Override
     public List<AdminEmployerRequestDto> getAllEmployersWithFilter(AdminEmployerRequestDto searchRequest) {
@@ -342,4 +349,20 @@ public class AdminServiceImpl implements AdminService {
 
     private static <T> List<T> nvl(List<T> v) { return v == null ? List.of() : v; }
 
+    public List<PointDto> getPostingStats(Granularity g, LocalDate from, LocalDate to) {
+        LocalDateTime fromDt = from.atStartOfDay();
+        LocalDateTime toEx = switch (g) {
+            case DAY   -> to.plusDays(1).atStartOfDay();
+            case MONTH -> to.withDayOfMonth(1).plusMonths(1).atStartOfDay();
+            case YEAR  -> to.withDayOfYear(1).plusYears(1).atStartOfDay();
+        };
+
+        String pattern = switch (g) {
+            case DAY   -> "%Y-%m-%d";
+            case MONTH -> "%Y-%m";
+            case YEAR  -> "%Y";
+        };
+
+        return statsMapper.countPostings(g, fromDt, toEx, pattern);
+    }
 }

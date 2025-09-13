@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.career.careerlink.admin.mapper.StatsMapper">
+
+    <resultMap id="PointMap" type="com.career.careerlink.admin.dto.PointDto">
+        <result column="x" property="x"/>
+        <result column="y" property="y"/>
+    </resultMap>
+
+    <!-- 등록 공고 수 -->
+    <select id="countPostings" resultMap="PointMap">
+        <choose>
+
+            <when test="granularity == @com.career.careerlink.admin.entity.enums.Granularity@DAY">
+                WITH RECURSIVE days(dt) AS (
+                SELECT DATE(#{from})
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 DAY)
+                FROM days
+                WHERE dt <![CDATA[<]]> DATE(#{to})
+                )
+                SELECT
+                    DATE_FORMAT(d.dt, '%Y-%m-%d') AS x,
+                    COALESCE(cnt.c, 0)            AS y
+                FROM days d
+                LEFT JOIN (
+                    SELECT DATE(jp.created_at) AS dt, COUNT(*) AS c
+                    FROM job_postings jp
+                    WHERE jp.created_at <![CDATA[>=]]> #{from}
+                        AND jp.created_at <![CDATA[<]]>  #{to}
+                    GROUP BY DATE(jp.created_at)
+                ) cnt ON cnt.dt = d.dt
+                ORDER BY d.dt
+            </when>
+
+            <when test="granularity == @com.career.careerlink.admin.entity.enums.Granularity@MONTH">
+                WITH RECURSIVE months(dt) AS (
+                SELECT STR_TO_DATE(DATE_FORMAT(DATE(#{from}), '%Y-%m-01'), '%Y-%m-%d')
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 MONTH)
+                FROM months
+                WHERE dt <![CDATA[<]]> STR_TO_DATE(DATE_FORMAT(DATE(#{to}), '%Y-%m-01'), '%Y-%m-%d')
+                )
+                SELECT
+                    DATE_FORMAT(m.dt, '%Y-%m') AS x,
+                    COALESCE(cnt.c, 0)         AS y
+                FROM months m
+                LEFT JOIN (
+                    SELECT
+                        STR_TO_DATE(DATE_FORMAT(jp.created_at, '%Y-%m-01'), '%Y-%m-%d') AS dt,
+                        COUNT(*) AS c
+                    FROM job_postings jp
+                    WHERE jp.created_at <![CDATA[>=]]> #{from}
+                        AND jp.created_at <![CDATA[<]]>  #{to}
+                    GROUP BY STR_TO_DATE(DATE_FORMAT(jp.created_at, '%Y-%m-01'), '%Y-%m-%d')
+                ) cnt ON cnt.dt = m.dt
+                ORDER BY m.dt
+            </when>
+
+            <when test="granularity == @com.career.careerlink.admin.entity.enums.Granularity@YEAR">
+                WITH RECURSIVE years(dt) AS (
+                SELECT MAKEDATE(YEAR(DATE(#{from})), 1)
+                UNION ALL
+                SELECT DATE_ADD(dt, INTERVAL 1 YEAR)
+                FROM years
+                WHERE dt <![CDATA[<]]> MAKEDATE(YEAR(DATE(#{to})), 1)
+                )
+                SELECT
+                    DATE_FORMAT(y.dt, '%Y') AS x,
+                    COALESCE(cnt.c, 0)      AS y
+                FROM years y
+                LEFT JOIN (
+                    SELECT
+                        MAKEDATE(YEAR(jp.created_at), 1) AS dt,   /* 조인키 */
+                        COUNT(*)                          AS c    /* 카운트 */
+                    FROM job_postings jp
+                    WHERE jp.created_at <![CDATA[>=]]> #{from}
+                        AND jp.created_at <![CDATA[<]]>  #{to}
+                    GROUP BY MAKEDATE(YEAR(jp.created_at), 1)
+                ) cnt ON cnt.dt = y.dt
+                ORDER BY y.dt
+            </when>
+
+        </choose>
+    </select>
+
+
+    <!-- 지원자 수 -->
+    <select id="countApplicants" resultMap="PointMap">
+        SELECT DATE_FORMAT(ap.created_at, #{pattern}) AS x,
+               COUNT(*) AS y
+        FROM applications ap
+        WHERE ap.created_at <![CDATA[>=]]> #{from}
+          AND ap.created_at <![CDATA[<]]> #{to}
+        GROUP BY x
+        ORDER BY x
+    </select>
+
+</mapper>

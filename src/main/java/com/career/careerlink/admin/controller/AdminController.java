@@ -1,6 +1,7 @@
 package com.career.careerlink.admin.controller;
 
 import com.career.careerlink.admin.dto.*;
+import com.career.careerlink.admin.entity.enums.Granularity;
 import com.career.careerlink.admin.service.AdminService;
 import com.career.careerlink.faq.dto.FaqDto;
 import com.career.careerlink.job.service.JobPostingService;
@@ -11,11 +12,13 @@ import com.career.careerlink.faq.entity.enums.Category;
 import com.career.careerlink.global.response.SkipWrap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -134,5 +137,17 @@ public class AdminController {
     @PostMapping("/job-postings/delete-bulk")
     public int jobPostingDeleteBulk(@RequestBody List<String> targetJobPostingIds) {
         return jobPostingService.deleteBulkByAdmin(targetJobPostingIds);
+    }
+
+    /**
+     * (마이페이지) 관리자 대시보드 - 등록 공고 수
+     */
+    @GetMapping("/stats/postings")
+    public List<PointDto> postingStats(
+            @RequestParam Granularity granularity,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return adminService.getPostingStats(granularity, from, to);
     }
 }
