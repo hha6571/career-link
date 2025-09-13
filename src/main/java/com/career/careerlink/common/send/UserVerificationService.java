@@ -1,6 +1,9 @@
 package com.career.careerlink.common.send;
 
+import com.career.careerlink.admin.repository.AdminRepository;
+import com.career.careerlink.applicant.repository.ApplicantRepository;
 import com.career.careerlink.common.response.ErrorCode;
+import com.career.careerlink.employers.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.users.entity.LoginUser;
 import com.career.careerlink.users.repository.LoginUserRepository;
@@ -14,6 +17,7 @@ import net.nurigo.sdk.message.service.DefaultMessageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
 import java.util.Map;
@@ -28,6 +32,9 @@ public class UserVerificationService {
     private final LoginUserRepository loginUserRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final MailService mailService;
+    private final ApplicantRepository applicantRepository;
+    private final EmployerUserRepository employerUserRepository;
+    private final AdminRepository adminRepository;
 
     @Value("${spring.coolsms.api-key}")
     private String apiKey;
@@ -63,7 +70,7 @@ public class UserVerificationService {
                 NurigoApp.INSTANCE.initialize(apiKey, apiSecret, "https://api.coolsms.co.kr");
 
         Message message = new Message();
-        message.setFrom("01073075221");
+        message.setFrom("");
         message.setTo(phoneNumber);
         message.setText("[CareerLink] 인증번호 [" + code + "]를 입력해 주세요.");
         message.setType(MessageType.SMS);
@@ -166,5 +173,46 @@ public class UserVerificationService {
         redisTemplate.opsForValue().set("resetPwdToken:" + tempToken, user.getUserPk(), 10, TimeUnit.MINUTES);
 
         return tempToken;
+    }
+
+    // ---------------- 휴면계정 해제 ----------------
+    public void sendAccountVerificationCode(String loginId) {
+        String userName = loginUserRepository.findUserNameByLoginId(loginId)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.UNAUTHORIZED, "해당 정보로 등록된 회원이 존재하지 않습니다."));
+
+        String email = loginUserRepository.findEmailByLoginId(loginId)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.UNAUTHORIZED, "해당 정보로 등록된 회원이 존재하지 않습니다."));
+
+        String code = generateCode();
+        String type = "휴면 계정 해제";
+        saveCodeToRedis("reactivateId:" + loginId, code);
+        sendCodeMail(email, userName, code, type, "[CareerLink] 휴면계정 해제 인증번호 안내", "find-verification");
+    }
+
+    @Transactional
+    public void verifyAccountCode(String loginId, String code) {
+        String savedCode = redisTemplate.opsForValue().get("reactivateId:" + loginId);
+        if (savedCode == null || !savedCode.equals(code)) {
+            throw new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "인증번호가 일치하지 않거나 만료되었습니다.");
+        }
+
+        // 로그인용 뷰에서 역할 확인
+        LoginUser loginUser = loginUserRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.UNKNOWN_ERROR, "해당 정보로 등록된 회원이 존재하지 않습니다."));
+
+        // 업데이트
+        int updated = switch (loginUser.getRole()) {
+            case "USER"  -> applicantRepository.reactivateByLoginId(loginId);
+            case "EMP"   -> employerUserRepository.reactivateByLoginId(loginId);
+            case "ADMIN" -> adminRepository.reactivateByLoginId(loginId);
+            default      -> 0;
+        };
+
+        if (updated == 0) {
+            throw new CareerLinkException(ErrorCode.UNKNOWN_ERROR, "휴면 해제 처리에 실패했습니다.");
+        }
+
+        // 일회용 코드 폐기
+        redisTemplate.delete("reactivateId:" + loginId);
     }
 }

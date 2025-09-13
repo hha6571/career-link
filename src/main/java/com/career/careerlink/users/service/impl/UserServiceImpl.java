@@ -10,6 +10,7 @@ import com.career.careerlink.users.dto.LoginRequestDto;
 import com.career.careerlink.users.dto.TokenRequestDto;
 import com.career.careerlink.users.dto.TokenResponse;
 import com.career.careerlink.users.entity.LoginUser;
+import com.career.careerlink.users.entity.enums.UserStatus;
 import com.career.careerlink.users.repository.LoginUserRepository;
 import com.career.careerlink.users.service.UserService;
 import com.career.careerlink.global.redis.RedisUtil;
@@ -43,36 +44,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public TokenResponse login(LoginRequestDto dto, HttpServletResponse response) {
-//        LoginUser user = loginUserRepository.findByLoginId(dto.getLoginId())
-//                .orElseThrow(() -> new CareerLinkException("사용자 없음"));
-//
-//        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-//            throw new CareerLinkException("비밀번호 불일치");
-//        }
-        /**
-         *   @ 이 로직에서 예외를 이렇게 던지는 이유
-         * - 계정/비밀번호가 틀린 경우는 "비즈니스 실패"이며 서버 오류(500)가 아님.
-         * - 의도적으로 401(UNAUTHORIZED)을 내려야 하므로 CareerLinkException(ErrorCode.UNAUTHORIZED, message)를 던진다.
-         * - 그러면 GlobalExceptionHandler가 잡아서
-         *   HTTP 401 + { "header": { "result": false, "message": "...", "code": "UNAUTHORIZED" }, "body": null }
-         *   형태로 응답을 표준화해준다.
-         *
-         *   @ 프론트에서는?
-         * - Axios 인터셉터가 error.message 에 header.message를 넣어주도록 구성했기 때문에
-         *   `notifyError(setSnackbar, err)` 한 줄로 스낵바에 메시지를 뿌릴 수 있다.
-         *
-         *   @ 보안 주의 (계정 유추 방지)
-         * - 아이디/비밀번호가 틀린 케이스를 구분해 주면 계정 존재 여부가 노출될 수 있다.
-         * - 운영 환경에서는 아래 "단일 메시지" 방식을 권장:
-         *     "아이디 또는 비밀번호가 올바르지 않습니다."
-         * - 필요시 내부 로그에는 구체 이유를 남기고 사용자 메시지는 단일 메시지로 고정.
-         *
-         *   @ 대안(참고)
-         * - Spring Security 흐름을 그대로 태우고 싶다면 AuthenticationException을 던지고
-         *   AuthenticationEntryPoint에서 401 응답을 만들 수도 있다.
-         * - 지금 방식은 도메인 서비스에서 “의도된 401/403/409 …”를 명확하게 던지는 패턴이라 단순하고 테스트도 쉽다.
-         */
-        // --- 단일 메시지 권장안(운영 권장) ---
         LoginUser user = loginUserRepository.findByLoginId(dto.getLoginId())
                 .orElseThrow(() -> new CareerLinkException(
                         ErrorCode.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.")
@@ -83,14 +54,13 @@ public class UserServiceImpl implements UserService {
                     ErrorCode.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        // -- 만약 교육/개발 단계에서만 구분 메시지를 쓰고 싶다면 아래처럼 나눠도 됨:
-        // .orElseThrow(() -> new CareerLinkException(ErrorCode.UNAUTHORIZED, "아이디가 올바르지 않습니다."));
-        // if (!passwordEncoder.matches(...)) {
-        //     throw new CareerLinkException(ErrorCode.UNAUTHORIZED, "비밀번호가 올바르지 않습니다.");
-        // }
-
-        // (이하 토큰 발급/쿠키 세팅/레디스 저장/마지막 로그인 시간 갱신 등 기존 로직 그대로)
-        // ...
+        UserStatus status = user.getUserStatus();
+        if (status == UserStatus.WITHDRAWN) {
+            throw new CareerLinkException(ErrorCode.ACCOUNT_DELETED, "탈퇴 처리된 계정입니다.");
+        }
+        if (status == UserStatus.DORMANT || user.getDormantAt() != null) {
+            throw new CareerLinkException(ErrorCode.ACCOUNT_DORMANT, "휴면계정입니다. 본인확인 후 해제해주세요.");
+        }
 
         String employerId = null;
 

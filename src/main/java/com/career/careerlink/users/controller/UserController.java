@@ -181,4 +181,21 @@ public class UserController {
     public void resetPassword(@RequestBody ResetPasswordRequest request) {
         userService.resetPassword(request.resetToken(), request.newPassword());
     }
+
+    /**
+     * 휴면계정 인증번호 발송
+     */
+    @PostMapping("/reactivate/request")
+    public void accountReact(@RequestBody AccountReactivateRequest request){
+        userVerificationService.sendAccountVerificationCode(request.loginId());
+    }
+
+    /**
+     * 휴면계정 인증번호 검증
+     */
+    @PostMapping("/reactivate/verify")
+    public void verifyAccountCode(@RequestBody VerifyAccountCodeRequest request) {
+       userVerificationService.verifyAccountCode(request.loginId(), request.code()
+        );
+    }
 }

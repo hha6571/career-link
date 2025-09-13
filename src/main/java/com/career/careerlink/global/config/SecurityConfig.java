@@ -48,6 +48,8 @@ public class SecurityConfig {
                 "/api/users/verify-phone-code"
                 ,"/api/users/send-email-code"
                 ,"/api/users/verify-email-code"
+                ,"/api/users/reactivate/request"
+                ,"/api/users/reactivate/verify"
                 ,"/emp/signup"
                 ,"/common/**"
                 ,"/job/filters"
