@@ -1,6 +1,7 @@
 package com.career.careerlink.admin.service;
 
 import com.career.careerlink.admin.dto.*;
+import com.career.careerlink.admin.entity.enums.Granularity;
 import com.career.careerlink.faq.dto.FaqDto;
 import com.career.careerlink.notice.dto.NoticeDetailDto;
 import com.career.careerlink.notice.dto.NoticeDto;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface AdminService {
@@ -30,4 +32,5 @@ public interface AdminService {
     void createFaq(FaqDto dto);
     void updateFaq(FaqDto dto);
     void deleteFaq(Long faqId);
+    List<PointDto> getPostingStats(Granularity granularity, LocalDate from, LocalDate to);
 }
