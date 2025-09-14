@@ -2,10 +2,13 @@ package com.career.careerlink.applicant.service.impl;
 
 import com.career.careerlink.applicant.dto.*;
 import com.career.careerlink.applicant.entity.*;
+import com.career.careerlink.applicant.entity.enums.ApplicationStatus;
 import com.career.careerlink.applicant.repository.*;
 import com.career.careerlink.applicant.service.ApplicantService;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.global.util.UserIdGenerator;
+import com.career.careerlink.job.entity.JobPosting;
+import com.career.careerlink.job.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +32,8 @@ public class ApplicantServiceImpl implements ApplicantService {
     private final CertificationRepository certificationRepository;
     private final SkillRepository skillRepository;
     private final CoverLetterRepository coverLetterRepository;
+    private final JobRepository jobRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Override
     public void signup(SignupRequestDto dto) {
@@ -168,6 +170,101 @@ public class ApplicantServiceImpl implements ApplicantService {
 
         resumeRepository.delete(resume);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<CoverLetterDto> getMyCoverLetters() {
+        String userId = getCurrentUserId();
+        List<CoverLetter> entities = coverLetterRepository.findByUserIdOrderByUpdatedAtDesc(userId);
+        return CoverLetterDto.listOf(entities); // items = []
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CoverLetterDto getMyCoverLetter(Integer coverLetterId) {
+        String userId = getCurrentUserId();
+        CoverLetter entity = coverLetterRepository.findByCoverLetterIdAndUserId(coverLetterId, userId)
+                .orElseThrow(() -> new RuntimeException("자소서를 찾을 수 없습니다."));
+        return CoverLetterDto.of(entity); // items 포함
+    }
+
+    @Override
+    public CoverLetterDto createCoverLetter(CoverLetterDto dto) {
+        String userId = getCurrentUserId();
+        CoverLetter entity = dto.toEntity(userId);
+        return CoverLetterDto.of(coverLetterRepository.save(entity));
+    }
+
+    @Override
+    public CoverLetterDto updateCoverLetter(Integer coverLetterId, CoverLetterDto dto) {
+        String userId = getCurrentUserId();
+        CoverLetter entity = coverLetterRepository.findByCoverLetterIdAndUserId(coverLetterId, userId)
+                .orElseThrow(() -> new RuntimeException("자소서를 찾을 수 없습니다."));
+
+        dto.updateEntity(entity, userId);
+        return CoverLetterDto.of(coverLetterRepository.save(entity));
+    }
+
+    @Override
+    public void deleteCoverLetter(Integer coverLetterId) {
+        String userId = getCurrentUserId();
+        CoverLetter entity = coverLetterRepository.findByCoverLetterIdAndUserId(coverLetterId, userId)
+                .orElseThrow(() -> new RuntimeException("자소서를 찾을 수 없습니다."));
+        coverLetterRepository.delete(entity);
+    }
+
+    @Override
+    @Transactional
+    public ApplicationDto apply(ApplicationRequestDto requestDto) {
+        String userId = getCurrentUserId();
+
+        // 1. 취소되지 않은 지원이 이미 존재하는지 확인
+        boolean exists = applicationRepository
+                .existsByUserIdAndJobPosting_JobPostingIdAndStatusNot(
+                        userId,
+                        requestDto.getJobPostingId(),
+                        ApplicationStatus.CANCELLED
+                );
+
+        if (exists) {
+            throw new CareerLinkException("이미 해당 공고에 지원했습니다. (취소 후 다시 지원 가능)");
+        }
+
+        // 2. 공고 조회
+        JobPosting jobPosting = jobRepository.findById(requestDto.getJobPostingId())
+                .orElseThrow(() -> new CareerLinkException("공고를 찾을 수 없습니다."));
+
+        // 3. 이력서 조회
+        Resume resume = resumeRepository.findById(requestDto.getResumeId())
+                .orElseThrow(() -> new CareerLinkException("이력서를 찾을 수 없습니다."));
+
+        // 4. 자소서 조회 (선택적)
+        CoverLetter coverLetter = null;
+        if (requestDto.getCoverLetterId() != null) {
+            coverLetter = coverLetterRepository.findById(requestDto.getCoverLetterId())
+                    .orElseThrow(() -> new CareerLinkException("자소서를 찾을 수 없습니다."));
+        }
+
+        // 5. Application 생성 & 저장
+        Application application = new ApplicationDto()
+                .toEntity(jobPosting, resume, coverLetter, userId);
+
+        return ApplicationDto.of(applicationRepository.save(application));
+    }
+
+    // ---------------- 내 지원 내역 ----------------
+    @Override
+    @Transactional(readOnly = true)
+    public List<ApplicationDto> getMyApplications() {
+        String userId = getCurrentUserId();
+        return ApplicationDto.listOf(applicationRepository.findByUserId(userId));
+    }
+
+    // ---------------- 공고별 지원 내역 (기업) ----------------
+    @Override
+    @Transactional(readOnly = true)
+    public List<ApplicationDto> getApplicationsByJobPosting(Integer jobPostingId) {
+        return ApplicationDto.listOf(applicationRepository.findByJobPosting_JobPostingId(jobPostingId));
+    }
 
     // resume 내부 유틸
     private void saveChildren(Resume resume, ResumeFormDto dto, String userId) {
@@ -186,10 +283,6 @@ public class ApplicantServiceImpl implements ApplicantService {
         if (dto.getSkills() != null) {
             skillRepository.saveAll(dto.getSkills().stream()
                     .map(s -> s.toEntity(resume, userId)).toList());
-        }
-        if (dto.getCoverLetters() != null) {
-            coverLetterRepository.saveAll(dto.getCoverLetters().stream()
-                    .map(c -> c.toEntity(resume, userId)).toList());
         }
     }
     // null 리스트가 오면 "모두 삭제"로 간주.

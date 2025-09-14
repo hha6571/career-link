@@ -1,12 +1,15 @@
 package com.career.careerlink.applicant.entity;
 
+import com.career.careerlink.applicant.entity.enums.YnType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "resume_cover_letters")
+@Table(name = "cover_letter")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,39 +19,45 @@ public class CoverLetter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cover_letter_id")
     private Integer coverLetterId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "resume_id", nullable = false)
-    private Resume resume;
+    @Column(nullable = false, length = 50)
+    private String userId;
 
     @Column(nullable = false, length = 200)
-    private String title;
+    private String coverLetterTitle;
 
-    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
-    private String content;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 1)
+    private YnType isActive;
 
-    @Column(name = "created_by", nullable = false, length = 36)
     private String createdBy;
-
-    @Column(name = "updated_by", nullable = false, length = 36)
     private String updatedBy;
 
-    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    /** ✅ 항상 초기화해두기 */
+    @OneToMany(mappedBy = "coverLetter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CoverLetterItem> items = new ArrayList<>();
+
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /** 연관관계 메서드 */
+    public void addItem(CoverLetterItem item) {
+        if (this.items == null) {
+            this.items = new ArrayList<>();
+        }
+        this.items.add(item);
+        item.setCoverLetter(this);
     }
 }

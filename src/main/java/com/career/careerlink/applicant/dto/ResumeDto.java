@@ -25,7 +25,6 @@ public class ResumeDto {
     private List<ExperienceDto> experiences;
     private List<CertificationDto> certifications;
     private List<SkillDto> skills;
-    private List<CoverLetterDto> coverLetters;
 
     public static ResumeDto of(Resume entity) {
         return ResumeDto.builder()
@@ -39,7 +38,6 @@ public class ResumeDto {
                 .experiences(ExperienceDto.listOf(entity.getExperiences()))
                 .certifications(CertificationDto.listOf(entity.getCertifications()))
                 .skills(SkillDto.listOf(entity.getSkills()))
-                .coverLetters(CoverLetterDto.listOf(entity.getCoverLetters()))
                 .build();
     }
 
