@@ -20,6 +20,11 @@ public class CommonController {
         return commonService.getAllMenus(accessToken);
     }
 
+    @GetMapping("/getAllMenusByPublic")
+    public List<MenuDto> getAllMenusByPublic(@RequestParam String accessRole) {
+        return commonService.getAllMenusByPublic(accessRole);
+    }
+
     @GetMapping("/getCommonCodes")
     public List<CommonCodeDto> getCommonCodes(@RequestParam String groupCode) {
         return commonService.getCommonCodes(groupCode);

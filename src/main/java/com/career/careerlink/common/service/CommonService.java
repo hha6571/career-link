@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface CommonService {
     List<MenuDto> getAllMenus(@RequestHeader("Authorization") String accessToken);
+    List<MenuDto> getAllMenusByPublic(String accessRole);
     List<CommonCodeDto> getCommonCodes(String groupCode);
     List<CommonCodeDto> allCodesByGroup(String groupCode);
     List<CommonCodeDto> parentsByGroup(String groupCode);

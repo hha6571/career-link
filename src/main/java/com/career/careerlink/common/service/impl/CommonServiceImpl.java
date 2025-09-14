@@ -29,6 +29,12 @@ public class CommonServiceImpl implements CommonService {
     }
 
     @Override
+    public List<MenuDto> getAllMenusByPublic(String accessRole) {
+        List<Menu> menus = menuRepository.findByAccessRoleOrderByDisplayOrderAscMenuIdAsc(accessRole);
+        return MenuDto.listOf(menus);
+    }
+
+    @Override
     public List<CommonCodeDto> getCommonCodes(String groupCode) {
         return commonCodeMapper.getCommonCodes(groupCode);
     }
