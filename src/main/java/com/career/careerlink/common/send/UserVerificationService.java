@@ -1,9 +1,9 @@
 package com.career.careerlink.common.send;
 
-import com.career.careerlink.admin.repository.AdminRepository;
+import com.career.careerlink.users.repository.AdminRepository;
 import com.career.careerlink.applicant.repository.ApplicantRepository;
 import com.career.careerlink.common.response.ErrorCode;
-import com.career.careerlink.employers.repository.EmployerUserRepository;
+import com.career.careerlink.employers.member.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.users.entity.LoginUser;
 import com.career.careerlink.users.repository.LoginUserRepository;

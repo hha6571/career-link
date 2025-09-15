@@ -1,6 +1,6 @@
 package com.career.careerlink.job.dto;
 
-import com.career.careerlink.admin.dto.CommonCodeDto;
+import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
 import lombok.Builder;
 import lombok.Value;
 

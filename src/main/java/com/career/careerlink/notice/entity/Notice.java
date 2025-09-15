@@ -37,9 +37,6 @@ public class Notice {
     @Column(name = "file_url", length = 500)
     private String fileUrl;
 
-    @Column(name = "writer_id", nullable = false, columnDefinition = "varchar(50) default 'CareerLink'")
-    private String writerId = "CareerLink";
-
     @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
 

@@ -68,7 +68,7 @@
            ON em.employer_id = jp.employer_id
     </sql>
 
-    <select id="searchForEmployer" resultType="com.career.careerlink.employers.dto.EmployerJobPostingResponse">
+    <select id="searchForEmployer" resultType="com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingResponse">
         SELECT
         <include refid="BaseColumns"/>
         FROM job_postings jp
@@ -138,7 +138,7 @@
         </foreach>
     </update>
 
-    <select id="searchForAdmin" resultType="com.career.careerlink.admin.dto.AdminJobPostingResponse">
+    <select id="searchForAdmin" resultType="com.career.careerlink.admin.jobPosting.dto.AdminJobPostingResponse">
         SELECT
         <include refid="BaseColumns"/>
         FROM job_postings jp

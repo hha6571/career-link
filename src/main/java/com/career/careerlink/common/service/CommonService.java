@@ -1,7 +1,7 @@
 package com.career.careerlink.common.service;
 
-import com.career.careerlink.admin.dto.CommonCodeDto;
-import com.career.careerlink.admin.dto.MenuDto;
+import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
+import com.career.careerlink.admin.menu.dto.MenuDto;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;

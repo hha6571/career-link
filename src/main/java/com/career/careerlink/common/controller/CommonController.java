@@ -1,7 +1,7 @@
 package com.career.careerlink.common.controller;
 
-import com.career.careerlink.admin.dto.CommonCodeDto;
-import com.career.careerlink.admin.dto.MenuDto;
+import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
+import com.career.careerlink.admin.menu.dto.MenuDto;
 import com.career.careerlink.common.service.CommonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

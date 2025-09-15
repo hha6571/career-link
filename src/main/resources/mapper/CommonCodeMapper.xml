@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.career.careerlink.admin.mapper.CommonCodeMapper">
+<mapper namespace="com.career.careerlink.admin.commonCode.mapper.CommonCodeMapper">
 
-    <resultMap id="CommonCodeMap" type="com.career.careerlink.admin.dto.CommonCodeDto">
+    <resultMap id="CommonCodeMap" type="com.career.careerlink.admin.commonCode.dto.CommonCodeDto">
         <result column="group_code"  property="groupCode"/>
         <result column="code"        property="code"/>
         <result column="code_name"   property="codeName"/>
@@ -64,7 +64,7 @@
     </select>
 
     <!-- 목록 (offset/limit) -->
-    <select id="parentCodes" resultType="com.career.careerlink.admin.dto.CommonCodeDto">
+    <select id="parentCodes" resultType="com.career.careerlink.admin.commonCode.dto.CommonCodeDto">
         SELECT
         CONCAT('P:', group_code, '::', code) AS id,
         group_code  AS groupCode,
@@ -110,7 +110,7 @@
         AND group_code = #{groupCode}
     </select>
 
-    <select id="childCodes" resultType="com.career.careerlink.admin.dto.CommonCodeDto">
+    <select id="childCodes" resultType="com.career.careerlink.admin.commonCode.dto.CommonCodeDto">
         SELECT
         CONCAT('C:', group_code, '::', parent_code, '::', code) AS id,
         group_code  AS groupCode,

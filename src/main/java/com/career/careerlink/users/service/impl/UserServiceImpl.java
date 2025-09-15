@@ -1,10 +1,10 @@
 package com.career.careerlink.users.service.impl;
 
-import com.career.careerlink.admin.repository.AdminRepository;
+import com.career.careerlink.users.repository.AdminRepository;
 import com.career.careerlink.applicant.entity.Applicant;
 import com.career.careerlink.applicant.repository.ApplicantRepository;
 import com.career.careerlink.common.response.ErrorCode;
-import com.career.careerlink.employers.repository.EmployerUserRepository;
+import com.career.careerlink.employers.member.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.users.dto.LoginRequestDto;
 import com.career.careerlink.users.dto.TokenRequestDto;

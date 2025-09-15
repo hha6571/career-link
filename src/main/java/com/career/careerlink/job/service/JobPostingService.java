@@ -1,9 +1,9 @@
 package com.career.careerlink.job.service;
 
-import com.career.careerlink.admin.dto.AdminJobPostingResponse;
-import com.career.careerlink.admin.dto.AdminJobPostingSearchRequest;
-import com.career.careerlink.employers.dto.EmployerJobPostingResponse;
-import com.career.careerlink.employers.dto.EmployerJobPostingSearchRequest;
+import com.career.careerlink.admin.jobPosting.dto.AdminJobPostingResponse;
+import com.career.careerlink.admin.jobPosting.dto.AdminJobPostingSearchRequest;
+import com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingResponse;
+import com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingSearchRequest;
 import com.career.careerlink.job.dto.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

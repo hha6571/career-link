@@ -1,7 +1,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.career.careerlink.employers.mapper.EmployerMemberMapper">
+<mapper namespace="com.career.careerlink.employers.member.mapper.EmployerMemberMapper">
     <sql id="OrderByClause">
         ORDER BY
         <choose>
@@ -59,7 +59,7 @@
     </select>
 
     <select id="members" parameterType="map"
-            resultType="com.career.careerlink.employers.dto.EmployerMemberDto">
+            resultType="com.career.careerlink.employers.member.dto.EmployerMemberDto">
         <include refid="BaseSelect"/>
         <include refid="OrderByClause"/>
         LIMIT #{limit} OFFSET #{offset}

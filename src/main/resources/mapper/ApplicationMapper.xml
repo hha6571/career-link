@@ -3,10 +3,10 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.career.careerlink.employers.mapper.ApplicationMapper">
+<mapper namespace="com.career.careerlink.employers.jobPosting.mapper.ApplicationMapper">
 
     <!-- 공고 SelectBox -->
-    <select id="findJobPostingsByEmployerId" resultType="com.career.careerlink.employers.dto.JobPostingSimpleDto">
+    <select id="findJobPostingsByEmployerId" resultType="com.career.careerlink.employers.jobPosting.dto.JobPostingSimpleDto">
         SELECT
             job_posting_id AS jobPostingId,
             title
@@ -17,7 +17,7 @@
     </select>
 
     <!-- 지원자 count -->
-    <select id="getApplicationCount" parameterType="com.career.careerlink.employers.dto.ApplicationRequestDto" resultType="long">
+    <select id="getApplicationCount" parameterType="com.career.careerlink.employers.jobPosting.dto.ApplicationRequestDto" resultType="long">
         SELECT COUNT(*)
         FROM applications a
         JOIN resumes r ON a.resume_id = r.resume_id
@@ -39,7 +39,7 @@
     </select>
 
     <!-- 지원자 목록 -->
-    <select id="getApplications" resultType="com.career.careerlink.employers.dto.ApplicationDto">
+    <select id="getApplications" resultType="com.career.careerlink.employers.jobPosting.dto.ApplicationDto">
         SELECT
         a.application_id AS applicationId,
         a.job_posting_id AS jobPostingId,
@@ -100,7 +100,7 @@
 <!--            LIMIT 1-->
 <!--    </select>-->
 <!--    <resultMap id="ApplicationResultMap"-->
-<!--               type="com.career.careerlink.employers.dto.ApplicationDto">-->
+<!--               type="com.career.careerlink.employers.jobPosting.dto.ApplicationDto">-->
 <!--        <id     column="application_id" property="applicationId"/>-->
 <!--        <result column="job_posting_id" property="jobPostingId"/>-->
 <!--        <result column="job_title"      property="jobTitle"/>-->

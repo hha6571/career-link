@@ -1,6 +1,6 @@
 package com.career.careerlink.job.entity;
 
-import com.career.careerlink.employers.entity.Employer;
+import com.career.careerlink.employers.info.entiry.Employer;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import jakarta.persistence.*;
 import lombok.*;

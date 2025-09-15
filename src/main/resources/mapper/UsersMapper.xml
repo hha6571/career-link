@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.career.careerlink.admin.mapper.UsersMapper">
+<mapper namespace="com.career.careerlink.admin.user.mapper.UsersMapper">
 
     <select id="usersCount" resultType="long" >
         SELECT COUNT(*)
@@ -18,7 +18,7 @@
     </select>
 
     <!-- 목록 (offset/limit) -->
-    <select id="getUsers" resultType="com.career.careerlink.admin.dto.UsersDto">
+    <select id="getUsers" resultType="com.career.careerlink.admin.user.dto.UsersDto">
         SELECT
         login_id AS loginId,
         user_name AS userName,

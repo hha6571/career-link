@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.career.careerlink.admin.mapper.StatsMapper">
+<mapper namespace="com.career.careerlink.admin.dashboard.mapper.StatsMapper">
 
-    <resultMap id="PointMap" type="com.career.careerlink.admin.dto.PointDto">
+    <resultMap id="PointMap" type="com.career.careerlink.admin.dashboard.dto.PointDto">
         <result column="x" property="x"/>
         <result column="y" property="y"/>
     </resultMap>
@@ -12,7 +12,7 @@
     <select id="countPostings" resultMap="PointMap">
         <choose>
 
-            <when test="granularity == @com.career.careerlink.admin.entity.enums.Granularity@DAY">
+            <when test="granularity == @com.career.careerlink.admin.dashboard.entity.enums.Granularity@DAY">
                 WITH RECURSIVE days(dt) AS (
                 SELECT DATE(#{from})
                 UNION ALL
@@ -34,7 +34,7 @@
                 ORDER BY d.dt
             </when>
 
-            <when test="granularity == @com.career.careerlink.admin.entity.enums.Granularity@MONTH">
+            <when test="granularity == @com.career.careerlink.admin.dashboard.entity.enums.Granularity@MONTH">
                 WITH RECURSIVE months(dt) AS (
                 SELECT STR_TO_DATE(DATE_FORMAT(DATE(#{from}), '%Y-%m-01'), '%Y-%m-%d')
                 UNION ALL
@@ -58,7 +58,7 @@
                 ORDER BY m.dt
             </when>
 
-            <when test="granularity == @com.career.careerlink.admin.entity.enums.Granularity@YEAR">
+            <when test="granularity == @com.career.careerlink.admin.dashboard.entity.enums.Granularity@YEAR">
                 WITH RECURSIVE years(dt) AS (
                 SELECT MAKEDATE(YEAR(DATE(#{from})), 1)
                 UNION ALL

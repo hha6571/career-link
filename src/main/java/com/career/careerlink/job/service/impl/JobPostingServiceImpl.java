@@ -1,16 +1,16 @@
 package com.career.careerlink.job.service.impl;
 
-import com.career.careerlink.admin.dto.AdminJobPostingResponse;
-import com.career.careerlink.admin.dto.AdminJobPostingSearchRequest;
-import com.career.careerlink.admin.dto.CommonCodeDto;
+import com.career.careerlink.admin.jobPosting.dto.AdminJobPostingResponse;
+import com.career.careerlink.admin.jobPosting.dto.AdminJobPostingSearchRequest;
+import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.common.service.CommonService;
-import com.career.careerlink.employers.dto.EmployerJobPostingResponse;
-import com.career.careerlink.employers.dto.EmployerJobPostingSearchRequest;
-import com.career.careerlink.employers.entity.Employer;
-import com.career.careerlink.employers.entity.EmployerUsers;
-import com.career.careerlink.employers.repository.EmployerRepository;
-import com.career.careerlink.employers.repository.EmployerUserRepository;
+import com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingResponse;
+import com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingSearchRequest;
+import com.career.careerlink.employers.info.entiry.Employer;
+import com.career.careerlink.users.entity.EmployerUsers;
+import com.career.careerlink.employers.info.repository.EmployerRepository;
+import com.career.careerlink.employers.member.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.job.dto.*;
 import com.career.careerlink.job.entity.JobPosting;

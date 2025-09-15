@@ -1,10 +1,10 @@
 package com.career.careerlink.common.service.impl;
 
-import com.career.careerlink.admin.dto.CommonCodeDto;
-import com.career.careerlink.admin.dto.MenuDto;
-import com.career.careerlink.admin.entity.Menu;
-import com.career.careerlink.admin.mapper.CommonCodeMapper;
-import com.career.careerlink.admin.repository.MenuRepository;
+import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
+import com.career.careerlink.admin.menu.dto.MenuDto;
+import com.career.careerlink.admin.menu.entity.Menu;
+import com.career.careerlink.admin.commonCode.mapper.CommonCodeMapper;
+import com.career.careerlink.admin.menu.repository.MenuRepository;
 import com.career.careerlink.common.service.CommonService;
 import com.career.careerlink.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
