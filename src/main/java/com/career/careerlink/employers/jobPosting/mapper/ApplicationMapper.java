@@ -1,6 +1,6 @@
 package com.career.careerlink.employers.jobPosting.mapper;
 
-import com.career.careerlink.applicant.dto.ApplicationResponseDto;
+import com.career.careerlink.applicant.application.dto.ApplicationResponseDto;
 import com.career.careerlink.employers.jobPosting.dto.ApplicationDto;
 import com.career.careerlink.employers.jobPosting.dto.ApplicationRequestDto;
 import com.career.careerlink.employers.jobPosting.dto.JobPostingSimpleDto;
