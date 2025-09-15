@@ -9,7 +9,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,7 +28,7 @@ public class AdminMenuServiceImpl implements AdminMenuService {
 
     @Override
     @Transactional
-    public void saveMenus(MenuDto saveDto) {
+    public void saveMenus(MenuDto saveDto, String AdminUserId) {
         var deletes = nvl(saveDto.getDeletes());
         var inserts = nvl(saveDto.getInserts());
         var updates = nvl(saveDto.getUpdates());
@@ -47,6 +46,7 @@ public class AdminMenuServiceImpl implements AdminMenuService {
             menu.setMenuName(dto.getMenuName());
             menu.setMenuPath(dto.getMenuPath());
             menu.setDisplayOrder(dto.getDisplayOrder());
+            menu.setCreatedBy(AdminUserId);
             if (dto.getParentId() == null) {
                 menu.setLevel(1);
                 menu.setParent(null);
@@ -71,6 +71,7 @@ public class AdminMenuServiceImpl implements AdminMenuService {
             menu.setMenuName(dto.getMenuName());
             menu.setMenuPath(dto.getMenuPath());
             menu.setDisplayOrder(dto.getDisplayOrder());
+            menu.setUpdatedBy(AdminUserId);
             if (dto.getParentId() == null) {
                 menu.setParent(null);
                 menu.setLevel(1);

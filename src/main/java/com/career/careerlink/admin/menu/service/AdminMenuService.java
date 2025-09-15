@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface AdminMenuService {
     List<MenuDto> getAllMenus(String accessRole);
-    void saveMenus(MenuDto saveDto);
+    void saveMenus(MenuDto saveDto, String AdminUserId);
 }

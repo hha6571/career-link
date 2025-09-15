@@ -33,6 +33,8 @@ public class ApplicantDto {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
 
     // Entity → DTO 변환
     public static ApplicantDto of(Applicant applicant) {
@@ -53,6 +55,8 @@ public class ApplicantDto {
                 .userStatus(applicant.getUserStatus())
                 .createdAt(applicant.getCreatedAt())
                 .updatedAt(applicant.getUpdatedAt())
+                .createdBy(applicant.getCreatedBy())
+                .updatedBy(applicant.getUpdatedBy())
                 .build();
     }
 

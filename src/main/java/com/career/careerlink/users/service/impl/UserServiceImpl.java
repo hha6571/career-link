@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
                 .agreeMarketing(dto.getAgreeMarketing())
                 .userStatus(dto.getUserStatus())
                 .createdAt(dto.getCreatedAt())
-                .updatedAt(dto.getUpdatedAt())
+                .createdBy(generatedUserId)
                 .build();
 
         applicantRepository.save(newApplicant);

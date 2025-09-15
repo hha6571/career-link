@@ -5,6 +5,7 @@ import com.career.careerlink.admin.menu.service.AdminMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -21,7 +22,8 @@ public class AdminMenuController {
     }
 
     @PostMapping("/saveMenus")
-    public void saveMenus(@RequestBody MenuDto saveDto) {
-        adminMenuService.saveMenus(saveDto);
+    public void saveMenus(@RequestBody MenuDto saveDto, Principal principal) {
+        String AdminUserId = principal.getName();
+        adminMenuService.saveMenus(saveDto,AdminUserId);
     }
 }

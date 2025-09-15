@@ -78,6 +78,12 @@ public class Applicant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "created_by", nullable = false, length = 36)
+    private String createdBy;
+
+    @Column(name = "updated_by", length = 36)
+    private String updatedBy;
+
     @PrePersist
     public void onCreate() {
         if (this.userStatus == null) {

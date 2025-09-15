@@ -24,6 +24,8 @@ public class MenuDto {
     private String icon;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
 
     public static MenuDto of(Menu menu) {
         return MenuDto.builder()
@@ -36,6 +38,8 @@ public class MenuDto {
                 .isActive(menu.getIsActive())
                 .accessRole(menu.getAccessRole())
                 .icon(menu.getIcon())
+                .createdBy(menu.getCreatedBy())
+                .updatedBy(menu.getUpdatedBy())
                 .createdAt(menu.getCreatedAt())
                 .updatedAt(menu.getUpdatedAt())
                 .build();
