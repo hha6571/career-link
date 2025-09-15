@@ -1,7 +1,11 @@
 package com.career.careerlink.employers.service.impl;
 
+import com.career.careerlink.applicant.mapper.CoverLetterMapper;
+import com.career.careerlink.applicant.mapper.ResumeMapper;
 import com.career.careerlink.employers.dto.*;
+import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.employers.entity.EmployerUsers;
+import com.career.careerlink.employers.mapper.ApplicationMapper;
 import com.career.careerlink.employers.mapper.EmployerMemberMapper;
 import com.career.careerlink.employers.repository.EmployerRepository;
 import com.career.careerlink.employers.repository.EmployerUserRepository;
@@ -9,7 +13,6 @@ import com.career.careerlink.employers.service.EmployerService;
 import com.career.careerlink.global.s3.S3Service;
 import com.career.careerlink.global.s3.S3UploadType;
 import com.career.careerlink.global.util.UserIdGenerator;
-import com.career.careerlink.employers.entity.Employer;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -24,7 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +42,9 @@ public class EmployerServiceImpl implements EmployerService {
     private final EntityManager em;
     private final PasswordEncoder passwordEncoder;
     private final EmployerMemberMapper employerMemberMapper;
+    private final ApplicationMapper applicationMapper;
+    private final ResumeMapper resumeMapper;
+    private final CoverLetterMapper coverLetterMapper;
 
     // ----------------------------
     // 공통: 로그인 사용자 → employerId 해석
@@ -274,4 +283,68 @@ public class EmployerServiceImpl implements EmployerService {
                 employerUserId
         );
     }
+
+    private String resolveEmployerId(String employerUserId) {
+        EmployerUsers eu = employerUserRepository.findByEmployerUserIdAndIsApproved(employerUserId, AgreementStatus.Y)
+                .orElseThrow(() -> new RuntimeException("승인된 기업 회원을 찾을 수 없습니다."));
+        return eu.getEmployerId();
+    }
+    @Override
+    public List<JobPostingSimpleDto> getMyJobPostings(String employerUserId) {
+        String employerId = resolveEmployerId(employerUserId);
+        return applicationMapper.findJobPostingsByEmployerId(employerId);
+    }
+
+    @Override
+    public Page<ApplicationDto> getApplications(ApplicationRequestDto req) {
+        int page = Optional.ofNullable(req.getPage()).orElse(0);
+        int size = Optional.ofNullable(req.getSize()).orElse(10);
+
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+        int offset = safePage * safeSize;
+
+        long total = applicationMapper.getApplicationCount(req);
+        List<ApplicationDto> rows = applicationMapper.getApplications(req, offset, safeSize);
+
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize), total);
+    }
+
+    @Override
+    @Transactional
+    public boolean updateStatuses(List<ApplicationDto> updates, String employerUserId) {
+        int updatedCount = 0;
+        for (ApplicationDto dto : updates) {
+            updatedCount += applicationMapper.updateApplicationStatus(dto.getApplicationId(),
+                    dto.getStatus(),
+                    employerUserId);
+        }
+        return updatedCount == updates.size();
+    }
+//    @Override
+//    public Map<String, Object> getApplicationPreview(Integer applicationId, String employerUserId) {
+//        // 1. 지원 내역 조회 (해당 기업 소속 공고인지 체크)
+//        ApplicationDto app = applicationMapper.findByIdAndEmployerUserId(applicationId, employerUserId);
+//        if (app == null) {
+//            throw new CareerLinkException("지원 내역을 찾을 수 없습니다.");
+//        }
+//
+//
+//        // 2. 이력서 조회 (항목 포함)
+//        ResumeDto resume = resumeMapper.findDetailById(app.getResumeId());
+//
+//        // 3. 자소서 조회 (항목 포함)
+//        CoverLetterDto coverLetter = null;
+//        if (app.getCoverLetterId() != null) {
+//            coverLetter = coverLetterMapper.findDetailById(app.getCoverLetterId());
+//        }
+//
+//        // 4. 리턴 (프론트는 { resume, coverLetter } 그대로 받음)
+//        Map<String, Object> result = new HashMap<>();
+//        result.put("resume", resume);
+//        result.put("coverLetter", coverLetter);
+//        return result;
+//    }
+
+
 }

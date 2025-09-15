@@ -130,4 +130,38 @@ public class EmployerController {
         String employerUserId = principal.getName();
         return jobPostingService.deleteBulkByEmployer(targetJobPostingIds, employerUserId);
     }
+    /**
+     * 기업 공고 셀렉트박스용 단순 조회
+     */
+    @GetMapping("/job-postings")
+    public List<JobPostingSimpleDto> getMyJobPostings(Principal principal) {
+        String employerUserId = principal.getName();
+        return employerService.getMyJobPostings(employerUserId);
+    }
+    /**
+     * 지원자 목록 조회 (기업 소속 공고 기준)
+     */
+    @GetMapping("/applications")
+    public Page<ApplicationDto> getApplications(ApplicationRequestDto req) {
+        return employerService.getApplications(req);
+    }
+
+    /**
+     * 지원 상태 업데이트
+     */
+    @PutMapping("/applications/status")
+    public boolean updateApplicationStatuses(@RequestBody List<ApplicationDto> updates,
+                                             Principal principal) {
+        String employerUserId = principal.getName();
+        return employerService.updateStatuses(updates, employerUserId);
+    }
+    /**
+     * 지원서 미리보기 (기업 전용)
+     */
+//    @GetMapping("/applications/{applicationId}/preview")
+//    public Map<String, Object> getApplicationPreview(@PathVariable Integer applicationId,
+//                                                     Principal principal) {
+//        String employerUserId = principal.getName();
+//        return employerService.getApplicationPreview(applicationId, employerUserId);
+//    }
 }

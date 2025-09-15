@@ -1,6 +1,8 @@
 package com.career.careerlink.applicant.service;
 
 import com.career.careerlink.applicant.dto.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -20,7 +22,9 @@ public interface ApplicantService {
     CoverLetterDto createCoverLetter(CoverLetterDto dto);
     CoverLetterDto updateCoverLetter(Integer coverLetterId, CoverLetterDto dto);
     void deleteCoverLetter(Integer coverLetterId);
-    ApplicationDto apply(ApplicationRequestDto requestDto); // 지원하기
-    List<ApplicationDto> getMyApplications(); // 내 지원 내역
-    List<ApplicationDto> getApplicationsByJobPosting(Integer jobPostingId);
+    ApplicationResponseDto apply(ApplicationRequestDto requestDto);
+    Page<ApplicationResponseDto> getMyApplications(String period, Pageable pageable);
+    List<ApplicationResponseDto> getApplicationsByJobPosting(Integer jobPostingId);
+    ApplicationResponseDto cancelApplication(Integer applicationId);
+    ApplicationResponseDto reapply(Integer applicationId);
 }

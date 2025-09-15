@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.career.careerlink.employers.mapper.ApplicationMapper">
+
+    <!-- 공고 SelectBox -->
+    <select id="findJobPostingsByEmployerId" resultType="com.career.careerlink.employers.dto.JobPostingSimpleDto">
+        SELECT
+            job_posting_id AS jobPostingId,
+            title
+        FROM job_postings
+        WHERE employer_id = #{employerId}
+          AND is_deleted = 'N'
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 지원자 count -->
+    <select id="getApplicationCount" parameterType="com.career.careerlink.employers.dto.ApplicationRequestDto" resultType="long">
+        SELECT COUNT(*)
+        FROM applications a
+        JOIN resumes r ON a.resume_id = r.resume_id
+        JOIN applicants u ON a.user_id = u.user_id
+        JOIN job_postings j ON a.job_posting_id = j.job_posting_id
+        <where>
+            j.is_deleted = 'N'
+            <if test="req.jobPostingId != null and req.jobPostingId != ''">
+                AND a.job_posting_id = #{req.jobPostingId}
+            </if>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                u.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR u.email LIKE CONCAT('%', #{req.keyword}, '%')
+                OR r.title LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <!-- 지원자 목록 -->
+    <select id="getApplications" resultType="com.career.careerlink.employers.dto.ApplicationDto">
+        SELECT
+        a.application_id AS applicationId,
+        a.job_posting_id AS jobPostingId,
+        j.title          AS jobTitle,
+        a.resume_id            AS resumeId,
+        a.cover_letter_id      AS coverLetterId,
+        u.user_name      AS applicantName,
+        u.email          AS email,
+        r.title          AS resumeTitle,
+        a.status         AS status,
+        a.applied_at     AS appliedAt
+        FROM applications a
+        JOIN resumes r ON a.resume_id = r.resume_id
+        JOIN applicants u ON a.user_id = u.user_id
+        JOIN job_postings j ON a.job_posting_id = j.job_posting_id
+        <where>
+            j.is_deleted = 'N'
+            <if test="req.jobPostingId != null and req.jobPostingId != ''">
+                AND a.job_posting_id = #{req.jobPostingId}
+            </if>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                u.user_name LIKE CONCAT('%', #{req.keyword}, '%')
+                OR u.email LIKE CONCAT('%', #{req.keyword}, '%')
+                OR r.title LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY a.applied_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 상태 업데이트 -->
+    <update id="updateApplicationStatus">
+        UPDATE applications
+        SET status = #{status},
+            updated_by = #{updatedBy},
+            updated_at = NOW()
+        WHERE application_id = #{applicationId}
+    </update>
+
+<!--    <select id="findByIdAndEmployerUserId" resultMap="ApplicationResultMap">-->
+<!--        SELECT-->
+<!--            a.application_id,-->
+<!--            a.job_posting_id,-->
+<!--            jp.title              AS job_title,-->
+<!--            a.resume_id,-->
+<!--            a.cover_letter_id,-->
+<!--            a.user_id,-->
+<!--            a.status,-->
+<!--            a.applied_at-->
+<!--        FROM applications a-->
+<!--                 JOIN job_postings jp   ON a.job_posting_id = jp.job_posting_id-->
+<!--                 JOIN employer_users eu ON eu.employer_id   = jp.employer_id-->
+<!--        WHERE a.application_id   = #{applicationId}-->
+<!--          AND eu.employer_user_id = #{employerUserId}-->
+<!--          AND eu.is_approved      = 'Y'-->
+<!--            LIMIT 1-->
+<!--    </select>-->
+<!--    <resultMap id="ApplicationResultMap"-->
+<!--               type="com.career.careerlink.employers.dto.ApplicationDto">-->
+<!--        <id     column="application_id" property="applicationId"/>-->
+<!--        <result column="job_posting_id" property="jobPostingId"/>-->
+<!--        <result column="job_title"      property="jobTitle"/>-->
+<!--        <result column="resume_id"      property="resumeId"/>-->
+<!--        <result column="cover_letter_id" property="coverLetterId"/>-->
+<!--        <result column="applicant_id"   property="applicantId"/>-->
+<!--        <result column="applicant_name" property="applicantName"/>-->
+<!--        <result column="email"          property="email"/>-->
+<!--        <result column="resume_title"   property="resumeTitle"/>-->
+<!--        <result column="status"         property="status"/>-->
+<!--        <result column="applied_at"     property="appliedAt"/>-->
+<!--        <result column="updated_at"     property="updatedAt"/>-->
+<!--    </resultMap>-->
+
+
+<!--    &lt;!&ndash; (선택) Employer “회사” 기준 &ndash;&gt;-->
+<!--    <select id="findByIdAndEmployerId" resultMap="ApplicationResultMap">-->
+<!--        SELECT-->
+<!--            a.application_id,-->
+<!--            a.job_posting_id,-->
+<!--            jp.title              AS job_title,-->
+<!--            a.resume_id,-->
+<!--            a.cover_letter_id,-->
+<!--            a.user_id,-->
+<!--            a.status,-->
+<!--            a.applied_at-->
+<!--        FROM applications a-->
+<!--                 JOIN job_postings jp ON a.job_posting_id = jp.job_posting_id-->
+<!--        WHERE a.application_id = #{applicationId}-->
+<!--          AND jp.employer_id   = #{employerId}-->
+<!--            LIMIT 1-->
+<!--    </select>-->
+
+
+</mapper>

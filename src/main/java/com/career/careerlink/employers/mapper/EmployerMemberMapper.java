@@ -4,6 +4,7 @@ import com.career.careerlink.employers.dto.EmployerMemberDto;
 import com.career.careerlink.employers.dto.EmployerMemberSearchRequest;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 

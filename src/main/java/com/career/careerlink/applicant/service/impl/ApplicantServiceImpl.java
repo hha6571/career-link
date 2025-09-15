@@ -10,12 +10,15 @@ import com.career.careerlink.global.util.UserIdGenerator;
 import com.career.careerlink.job.entity.JobPosting;
 import com.career.careerlink.job.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -214,7 +217,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     @Override
     @Transactional
-    public ApplicationDto apply(ApplicationRequestDto requestDto) {
+    public ApplicationResponseDto apply(ApplicationRequestDto requestDto) {
         String userId = getCurrentUserId();
 
         // 1. 취소되지 않은 지원이 이미 존재하는지 확인
@@ -245,26 +248,131 @@ public class ApplicantServiceImpl implements ApplicantService {
         }
 
         // 5. Application 생성 & 저장
-        Application application = new ApplicationDto()
-                .toEntity(jobPosting, resume, coverLetter, userId);
+        Application application = Application.builder()
+                .jobPosting(jobPosting)
+                .resume(resume)
+                .coverLetter(coverLetter)
+                .userId(userId)
+                .status(ApplicationStatus.SUBMITTED)
+                .appliedAt(LocalDateTime.now())
+                .createdBy(userId)
+                .updatedBy(userId)
+                .build();
 
-        return ApplicationDto.of(applicationRepository.save(application));
+        return ApplicationResponseDto.of(applicationRepository.save(application));
     }
 
-    // ---------------- 내 지원 내역 ----------------
     @Override
     @Transactional(readOnly = true)
-    public List<ApplicationDto> getMyApplications() {
+    public Page<ApplicationResponseDto> getMyApplications(String period, Pageable pageable) {
         String userId = getCurrentUserId();
-        return ApplicationDto.listOf(applicationRepository.findByUserId(userId));
+
+        Page<Application> pageResult;
+
+        switch (period) {
+            case "3M":
+                pageResult = applicationRepository.findByUserIdAndAppliedAtAfter(
+                        userId,
+                        LocalDateTime.now().minusMonths(3),
+                        pageable
+                );
+                break;
+
+            case "6M":
+                pageResult = applicationRepository.findByUserIdAndAppliedAtAfter(
+                        userId,
+                        LocalDateTime.now().minusMonths(6),
+                        pageable
+                );
+                break;
+
+            case "1Y":
+                pageResult = applicationRepository.findByUserIdAndAppliedAtAfter(
+                        userId,
+                        LocalDateTime.now().minusYears(1),
+                        pageable
+                );
+                break;
+
+            case "ALL":
+            default:
+                pageResult = applicationRepository.findByUserId(userId, pageable);
+                break;
+        }
+
+        return pageResult.map(ApplicationResponseDto::of);
     }
 
-    // ---------------- 공고별 지원 내역 (기업) ----------------
+
     @Override
     @Transactional(readOnly = true)
-    public List<ApplicationDto> getApplicationsByJobPosting(Integer jobPostingId) {
-        return ApplicationDto.listOf(applicationRepository.findByJobPosting_JobPostingId(jobPostingId));
+    public List<ApplicationResponseDto> getApplicationsByJobPosting(Integer jobPostingId) {
+        return ApplicationResponseDto.listOf(
+                applicationRepository.findByJobPosting_JobPostingId(jobPostingId)
+        );
     }
+
+    @Override
+    @Transactional
+    public ApplicationResponseDto cancelApplication(Integer applicationId) {
+        String userId = getCurrentUserId();
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CareerLinkException("지원 내역을 찾을 수 없습니다."));
+
+        // 본인 지원 내역만 취소 가능
+        if (!application.getUserId().equals(userId)) {
+            throw new CareerLinkException("본인의 지원만 취소할 수 있습니다.");
+        }
+
+        // 기업에서 상태 변경했으면 취소 불가
+        if (application.getStatus() != ApplicationStatus.SUBMITTED &&
+                application.getStatus() != ApplicationStatus.UNDER_REVIEW) {
+            throw new CareerLinkException("기업에서 진행 중인 지원은 취소할 수 없습니다.");
+        }
+
+        application.setStatus(ApplicationStatus.CANCELLED);
+        application.setUpdatedBy(userId);
+        application.setUpdatedAt(LocalDateTime.now());
+
+        return ApplicationResponseDto.of(application);
+    }
+
+    @Override
+    @Transactional
+    public ApplicationResponseDto reapply(Integer applicationId) {
+        String userId = getCurrentUserId();
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CareerLinkException("지원 내역을 찾을 수 없습니다."));
+
+        // 본인 지원 내역만 다시 지원 가능
+        if (!application.getUserId().equals(userId)) {
+            throw new CareerLinkException("본인의 지원만 다시 지원할 수 있습니다.");
+        }
+
+        // 마감일 체크
+        JobPosting jobPosting = application.getJobPosting();
+        if (jobPosting.getApplicationDeadline() != null &&
+                jobPosting.getApplicationDeadline().isBefore(LocalDateTime.now().toLocalDate())) {
+            throw new CareerLinkException("이미 마감된 공고입니다. 다시 지원할 수 없습니다.");
+        }
+
+        // 취소 상태일 때만 다시 지원 가능
+        if (application.getStatus() != ApplicationStatus.CANCELLED) {
+            throw new CareerLinkException("취소된 지원만 다시 지원할 수 있습니다.");
+        }
+
+        application.setStatus(ApplicationStatus.SUBMITTED);
+        application.setAppliedAt(LocalDateTime.now()); // 지원일자 갱신
+        application.setUpdatedBy(userId);
+        application.setUpdatedAt(LocalDateTime.now());
+
+        return ApplicationResponseDto.of(application);
+    }
+
+
+
 
     // resume 내부 유틸
     private void saveChildren(Resume resume, ResumeFormDto dto, String userId) {

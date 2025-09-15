@@ -3,6 +3,10 @@ package com.career.careerlink.applicant.controller;
 import com.career.careerlink.applicant.dto.*;
 import com.career.careerlink.applicant.service.ApplicantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -106,20 +110,29 @@ public class ApplicantController {
      *  지원하기
      */
     @PostMapping("/job-postings/apply")
-    public ApplicationDto apply(@RequestBody ApplicationRequestDto requestDto) {
+    public ApplicationResponseDto apply(@RequestBody ApplicationRequestDto requestDto) {
         return applicantService.apply(requestDto);
     }
-
-    // 내 지원 내역
     @GetMapping("/job-postings/getMyApplications")
-    public List<ApplicationDto> getMyApplications() {
-        return applicantService.getMyApplications();
+    public Page<ApplicationResponseDto> getMyApplications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size,
+            @RequestParam(defaultValue = "3M") String period) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("appliedAt").descending());
+        return applicantService.getMyApplications(period, pageable);
+    }
+    @GetMapping("/job-postings/getApplicationsByJobPosting/{jobPostingId}")
+    public List<ApplicationResponseDto> getApplicationsByJobPosting(@PathVariable Integer jobPostingId) {
+        return applicantService.getApplicationsByJobPosting(jobPostingId);
+    }
+    @PutMapping("/job-postings/cancel/{applicationId}")
+    public ApplicationResponseDto cancelApplication(@PathVariable Integer applicationId) {
+        return applicantService.cancelApplication(applicationId);
     }
 
-    // 특정 공고 지원자 목록 (기업용)
-    @GetMapping("/job-postings/getApplicationsByJobPosting/{jobPostingId}")
-    public List<ApplicationDto> getApplicationsByJobPosting(@PathVariable Integer jobPostingId) {
-        return applicantService.getApplicationsByJobPosting(jobPostingId);
+    @PostMapping("/job-postings/reapply/{applicationId}")
+    public ApplicationResponseDto reapply(@PathVariable Integer applicationId) {
+        return applicantService.reapply(applicationId);
     }
 
 }
