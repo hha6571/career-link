@@ -1,4 +1,4 @@
-package com.career.careerlink.admin.dashboard.dto;
+package com.career.careerlink.dashboard.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

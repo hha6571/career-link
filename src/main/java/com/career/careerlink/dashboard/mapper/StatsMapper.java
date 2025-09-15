@@ -1,7 +1,7 @@
-package com.career.careerlink.admin.dashboard.mapper;
+package com.career.careerlink.dashboard.mapper;
 
-import com.career.careerlink.admin.dashboard.dto.PointDto;
-import com.career.careerlink.admin.dashboard.entity.enums.Granularity;
+import com.career.careerlink.dashboard.dto.PointDto;
+import com.career.careerlink.dashboard.entity.enums.Granularity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,13 +15,15 @@ public interface StatsMapper {
             @Param("granularity") Granularity granularity,
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime toExclusive,
-            @Param("pattern") String pattern
+            @Param("pattern") String pattern,
+            @Param("employerUserId") String employerUserId
     );
 
     List<PointDto> countApplicants(
             @Param("granularity") Granularity granularity,
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime toExclusive,
-            @Param("pattern") String pattern
+            @Param("pattern") String pattern,
+            @Param("employerUserId") String employerUserId
     );
 }
