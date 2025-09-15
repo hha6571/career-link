@@ -20,6 +20,15 @@ public class UserController {
     private final UserService userService;
     private final UserVerificationService userVerificationService;
 
+    /**
+     * 일반 회원가입
+     */
+    @PostMapping("/signup")
+    public ResponseEntity<Void> signup(@RequestBody SignupRequestDto dto) {
+        userService.signup(dto);
+        return ResponseEntity.ok().build();
+    }
+
     @SkipWrap
     @GetMapping("/check-id")
     public Map<String, Boolean> checkLoginId(@RequestParam String loginId) {

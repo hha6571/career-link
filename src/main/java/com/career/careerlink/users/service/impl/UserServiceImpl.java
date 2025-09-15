@@ -1,26 +1,28 @@
 package com.career.careerlink.users.service.impl;
 
-import com.career.careerlink.users.repository.AdminRepository;
-import com.career.careerlink.applicant.entity.Applicant;
-import com.career.careerlink.applicant.repository.ApplicantRepository;
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.employers.member.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
+import com.career.careerlink.global.redis.RedisUtil;
+import com.career.careerlink.global.security.JwtTokenProvider;
+import com.career.careerlink.global.util.UserIdGenerator;
+import com.career.careerlink.users.dto.SignupRequestDto;
+import com.career.careerlink.users.entity.Applicant;
+import com.career.careerlink.users.repository.ApplicantRepository;
 import com.career.careerlink.users.dto.LoginRequestDto;
 import com.career.careerlink.users.dto.TokenRequestDto;
 import com.career.careerlink.users.dto.TokenResponse;
 import com.career.careerlink.users.entity.LoginUser;
 import com.career.careerlink.users.entity.enums.UserStatus;
+import com.career.careerlink.users.repository.AdminRepository;
 import com.career.careerlink.users.repository.LoginUserRepository;
 import com.career.careerlink.users.service.UserService;
-import com.career.careerlink.global.redis.RedisUtil;
-import com.career.careerlink.global.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
 
@@ -36,6 +38,34 @@ public class UserServiceImpl implements UserService {
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+
+    @Override
+    public void signup(SignupRequestDto dto) {
+        String encodedPassword = passwordEncoder.encode(dto.getPasswordHash());
+        String generatedUserId = UserIdGenerator.generate("USR");
+
+        Applicant newApplicant = Applicant.builder()
+                .userId(generatedUserId)
+                .loginId(dto.getLoginId())
+                .passwordHash(encodedPassword)
+                .userName(dto.getUserName())
+                .phoneNumber(dto.getPhoneNumber())
+                .birthDate(dto.getBirthDate())
+                .gender(dto.getGender())
+                .userType(dto.getUserType())
+                .email(dto.getEmail())
+                .lastLoginAt(dto.getLastLoginAt())
+                .dormantAt(dto.getDormantAt())
+                .agreeTerms(dto.getAgreeTerms())
+                .agreePrivacy(dto.getAgreePrivacy())
+                .agreeMarketing(dto.getAgreeMarketing())
+                .userStatus(dto.getUserStatus())
+                .createdAt(dto.getCreatedAt())
+                .updatedAt(dto.getUpdatedAt())
+                .build();
+
+        applicantRepository.save(newApplicant);
+    }
 
     @Override
     public boolean isLoginIdDuplicate(String loginId) {

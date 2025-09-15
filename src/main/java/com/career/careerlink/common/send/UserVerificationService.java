@@ -1,11 +1,11 @@
 package com.career.careerlink.common.send;
 
-import com.career.careerlink.users.repository.AdminRepository;
-import com.career.careerlink.applicant.repository.ApplicantRepository;
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.employers.member.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
+import com.career.careerlink.users.repository.ApplicantRepository;
 import com.career.careerlink.users.entity.LoginUser;
+import com.career.careerlink.users.repository.AdminRepository;
 import com.career.careerlink.users.repository.LoginUserRepository;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.sdk.NurigoApp;
@@ -22,8 +22,8 @@ import org.thymeleaf.context.Context;
 
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
