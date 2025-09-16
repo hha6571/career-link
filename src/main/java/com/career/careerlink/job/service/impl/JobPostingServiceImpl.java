@@ -3,6 +3,7 @@ package com.career.careerlink.job.service.impl;
 import com.career.careerlink.admin.jobPosting.dto.AdminJobPostingResponse;
 import com.career.careerlink.admin.jobPosting.dto.AdminJobPostingSearchRequest;
 import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
+import com.career.careerlink.common.enums.YnType;
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.common.service.CommonService;
 import com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingResponse;
@@ -17,7 +18,6 @@ import com.career.careerlink.job.entity.JobPosting;
 import com.career.careerlink.job.mapper.JobPostingMapper;
 import com.career.careerlink.job.repository.JobRepository;
 import com.career.careerlink.job.service.JobPostingService;
-import com.career.careerlink.users.entity.enums.AgreementStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -82,7 +82,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         posting.setIsActive(dto.getIsActive());
         posting.setCreatedBy(employerUserId);
         posting.setUpdatedBy(employerUserId);
-        posting.setIsDeleted(AgreementStatus.N);
+        posting.setIsDeleted(YnType.N);
 
         JobPosting saved = jobRepository.save(posting);
         return JobPostingResponse.from(saved);

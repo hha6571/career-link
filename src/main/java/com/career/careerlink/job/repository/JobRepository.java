@@ -1,19 +1,21 @@
 package com.career.careerlink.job.repository;
 
+import com.career.careerlink.common.enums.YnType;
 import com.career.careerlink.job.dto.JobPostingResponse;
 import com.career.careerlink.job.entity.JobPosting;
-import com.career.careerlink.users.entity.enums.AgreementStatus;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface JobRepository
         extends JpaRepository<JobPosting, Integer>, JpaSpecificationExecutor<JobPosting> {
-    Optional<JobPosting> findByJobPostingIdAndIsActive(int jobPostingId, AgreementStatus isActive);
+    Optional<JobPosting> findByJobPostingIdAndIsActive(int jobPostingId, YnType isActive);
     
     //    조회수 증가
     @Modifying
@@ -34,4 +36,10 @@ public interface JobRepository
           and jp.isDeleted = 'N'
     """)
     Optional<JobPostingResponse> findDetailJobPosting(@Param("id") Integer id);
+
+    long countByEmployerIdAndIsDeletedAndIsActive(
+            String employerId, YnType isDeleted, YnType isActive);
+
+    List<JobPosting> findByEmployerIdAndIsDeletedAndIsActiveOrderByCreatedAtDesc(
+            String employerId, YnType isDeleted, YnType isActive, Pageable pageable);
 }

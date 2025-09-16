@@ -1,6 +1,6 @@
 package com.career.careerlink.job.dto;
 
-import com.career.careerlink.users.entity.enums.AgreementStatus;
+import com.career.careerlink.common.enums.YnType;
 import lombok.Builder;
 import lombok.Value;
 
@@ -23,6 +23,6 @@ public class JobCardResponse {
     String salary;
     LocalDateTime postedAt;  // createdAt
     LocalDate deadline;      // applicationDeadline
-    AgreementStatus isActive;
-    AgreementStatus isDeleted;
+    YnType isActive;
+    YnType isDeleted;
 }

@@ -207,7 +207,7 @@
         e.company_name AS companyName,
         e.company_logo_url AS companyLogoUrl,
 
-        COALESCE(jfc.code_name,  h.job_field_code)         AS jobFiled,
+        COALESCE(jfc.code_name,  h.job_field_code)         AS jobField,
         COALESCE(loc.code_name,  h.location_code)          AS location,
         COALESCE(emt.code_name,  h.employment_type_code)   AS employmentType,
         COALESCE(car.code_name,  h.career_level_code)      AS experience,

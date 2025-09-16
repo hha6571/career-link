@@ -1,7 +1,7 @@
 package com.career.careerlink.job.spec;
 
+import com.career.careerlink.common.enums.YnType;
 import com.career.careerlink.job.entity.JobPosting;
-import com.career.careerlink.users.entity.enums.AgreementStatus;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -10,11 +10,11 @@ import java.util.List;
 public class JobPostingSpecs {
 
     public static Specification<JobPosting> isActive() {
-        return (root, q, cb) -> cb.equal(root.get("isActive"), AgreementStatus.Y);
+        return (root, q, cb) -> cb.equal(root.get("isActive"), YnType.Y);
     }
 
     public static Specification<JobPosting> isDeleted() {
-        return (root, q, cb) -> cb.equal(root.get("isDeleted"), AgreementStatus.N);
+        return (root, q, cb) -> cb.equal(root.get("isDeleted"), YnType.N);
     }
 
     public static Specification<JobPosting> keywordLike(String keyword) {

@@ -1,5 +1,6 @@
 package com.career.careerlink.job.entity;
 
+import com.career.careerlink.common.enums.YnType;
 import com.career.careerlink.employers.info.entiry.Employer;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
 import jakarta.persistence.*;
@@ -58,11 +59,11 @@ public class JobPosting {
 
     @Column(name = "is_skillsnap", columnDefinition = "ENUM('Y','N')")
     @Enumerated(EnumType.STRING)
-    private AgreementStatus isSkillsnap;
+    private YnType isSkillsnap;
 
     @Column(name = "is_active", columnDefinition = "ENUM('Y','N')")
     @Enumerated(EnumType.STRING)
-    private AgreementStatus isActive;
+    private YnType isActive;
 
     @Column(name = "view_count")
     private Integer viewCount;
@@ -83,7 +84,7 @@ public class JobPosting {
 
     @Column(name = "is_deleted", columnDefinition = "ENUM('Y','N')")
     @Enumerated(EnumType.STRING)
-    private AgreementStatus isDeleted;
+    private YnType isDeleted;
 
     @PrePersist
     public void prePersist() {

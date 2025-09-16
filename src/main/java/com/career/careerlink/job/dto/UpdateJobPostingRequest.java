@@ -1,6 +1,6 @@
 package com.career.careerlink.job.dto;
 
-import com.career.careerlink.users.entity.enums.AgreementStatus;
+import com.career.careerlink.common.enums.YnType;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -19,8 +19,8 @@ public class UpdateJobPostingRequest {
     private String careerLevelCode;
     private String salaryCode;
     private LocalDate applicationDeadline;
-    private AgreementStatus isSkillsnap;
-    private AgreementStatus isActive;
+    private YnType isSkillsnap;
+    private YnType isActive;
     private String employerId;
     private LocalDateTime updatedAt;
     private String updatedBy;

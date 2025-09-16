@@ -1,7 +1,7 @@
 package com.career.careerlink.job.dto;
 
+import com.career.careerlink.common.enums.YnType;
 import com.career.careerlink.job.entity.JobPosting;
-import com.career.careerlink.users.entity.enums.AgreementStatus;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -24,8 +24,8 @@ public class JobPostingResponse {
     private String careerLevelCode;
     private String salaryCode;
     private LocalDate applicationDeadline;
-    private AgreementStatus isActive;
-    private AgreementStatus isDeleted;
+    private YnType isActive;
+    private YnType isDeleted;
 
     public static JobPostingResponse from(JobPosting posting) {
         return JobPostingResponse.builder()
