@@ -58,6 +58,8 @@ public class SecurityConfig {
                 ,"/job/job-posting/hot"
                 ,"/notice/**"
                 ,"/faq/**"
+                ,"/main/**"
+                ,"/public/**"
         };
 
         http
