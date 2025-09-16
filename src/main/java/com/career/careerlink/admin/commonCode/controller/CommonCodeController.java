@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/admin/commonCode")
 @RequiredArgsConstructor
@@ -27,7 +29,8 @@ public class CommonCodeController {
     }
 
     @PostMapping("/saveCommonCodes")
-    public void saveCommonCodes(@RequestBody CommonCodeSaveDto saveDto) {
-        commonCodeService.saveCommonCodes(saveDto);
+    public void saveCommonCodes(@RequestBody CommonCodeSaveDto saveDto, Principal principal) {
+        String AdminUserId = principal.getName();
+        commonCodeService.saveCommonCodes(saveDto,AdminUserId);
     }
 }

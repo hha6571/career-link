@@ -8,5 +8,5 @@ import org.springframework.data.domain.Page;
 public interface CommonCodeService {
     Page<CommonCodeDto> getParentCodes(CommonCodeSearchRequest req);
     Page<CommonCodeDto> getChildCodes(CommonCodeSearchRequest req);
-    void saveCommonCodes(CommonCodeSaveDto saveDto);
+    void saveCommonCodes(CommonCodeSaveDto saveDto, String AdminUserId);
 }

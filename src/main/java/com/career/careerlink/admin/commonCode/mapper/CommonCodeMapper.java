@@ -33,10 +33,10 @@ public interface CommonCodeMapper {
     void deleteParents(@Param("list") List<CommonCodeDto> list);
 
     // insert (중복 무시)
-    void insertParents(@Param("list") List<CommonCodeDto> list);
-    void insertChildren(@Param("list") List<CommonCodeDto> list);
+    void insertParents(@Param("list") List<CommonCodeDto> list ,@Param("id") String AdminUserId);
+    void insertChildren(@Param("list") List<CommonCodeDto> list ,@Param("id") String AdminUserId);
 
     // update
-    void updateParents(CommonCodeDto dto);
-    void updateChildren(CommonCodeDto dto);
+    void updateParents(CommonCodeDto dto, @Param("id") String AdminUserId);
+    void updateChildren(CommonCodeDto dto, @Param("id") String AdminUserId);
 }

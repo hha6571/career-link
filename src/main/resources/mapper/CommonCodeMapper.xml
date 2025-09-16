@@ -167,43 +167,47 @@
 
     <insert id="insertParents">
         INSERT IGNORE INTO common_codes
-        (group_code, code, code_name, parent_code, sort_order, level, use_yn)
+        (group_code, code, code_name, parent_code, sort_order, level, use_yn, created_at, created_by)
         VALUES
         <foreach collection="list" item="r" separator=",">
-            (#{r.groupCode}, #{r.code}, #{r.codeName}, NULL, #{r.sortOrder}, #{r.level}, #{r.useYn})
+            (#{r.groupCode}, #{r.code}, #{r.codeName}, NULL, #{r.sortOrder}, #{r.level}, #{r.useYn}, #{id}, NOW())
         </foreach>
     </insert>
 
     <insert id="insertChildren">
         INSERT IGNORE INTO common_codes
-        (group_code, code, code_name, parent_code, sort_order, level, use_yn)
+        (group_code, code, code_name, parent_code, sort_order, level, use_yn, created_at, created_by)
         VALUES
         <foreach collection="list" item="r" separator=",">
-            (#{r.groupCode}, #{r.code}, #{r.codeName}, #{r.parentCode}, #{r.sortOrder}, #{r.level}, #{r.useYn})
+            (#{r.groupCode}, #{r.code}, #{r.codeName}, #{r.parentCode}, #{r.sortOrder}, #{r.level}, #{r.useYn}, #{id}, NOW())
         </foreach>
     </insert>
 
     <update id="updateParents">
         UPDATE common_codes
         SET
-        code = #{code},
-        code_name = #{codeName},
-        sort_order = #{sortOrder},
-        level      = #{level},
-        use_yn     = #{useYn}
-        WHERE group_code = #{groupCode}
+        code = #{dto.code},
+        code_name = #{dto.codeName},
+        sort_order = #{dto.sortOrder},
+        level      = #{dto.level},
+        use_yn     = #{dto.useYn},
+        updated_at = NOW(),
+        updated_by = #{id}
+        WHERE group_code = #{dto.groupCode}
         AND parent_code IS NULL
     </update>
 
     <update id="updateChildren">
         UPDATE common_codes
-        SET code_name = #{codeName},
-        sort_order = #{sortOrder},
-        level      = #{level},
-        use_yn     = #{useYn}
-        WHERE group_code = #{groupCode}
-        AND parent_code= #{parentCode}
-        AND code       = #{code}
+        SET code_name = #{dto.codeName},
+        sort_order = #{dto.sortOrder},
+        level      = #{dto.level},
+        use_yn     = #{dto.useYn},
+        updated_at = NOW(),
+        updated_by = #{id}
+        WHERE group_code = #{dto.groupCode}
+        AND parent_code= #{dto.parentCode}
+        AND code       = #{dto.code}
     </update>
 
 </mapper>

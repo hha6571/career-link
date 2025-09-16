@@ -56,7 +56,7 @@ public class CommonCodeServiceImpl implements CommonCodeService {
     }
 
     @Override
-    public void saveCommonCodes(CommonCodeSaveDto saveDto) {
+    public void saveCommonCodes(CommonCodeSaveDto saveDto, String AdminUserId) {
         var pI = nvl(saveDto.getParentInserts());
         var pU = nvl(saveDto.getParentUpdates());
         var pD = nvl(saveDto.getParentDeletes());
@@ -69,16 +69,16 @@ public class CommonCodeServiceImpl implements CommonCodeService {
         if (!pD.isEmpty()) commonCodeMapper.deleteParents(pD);
 
         // 2) 삽입: 부모 → 자식
-        if (!pI.isEmpty()) commonCodeMapper.insertParents(pI);
-        if (!cI.isEmpty()) commonCodeMapper.insertChildren(cI);
+        if (!pI.isEmpty()) commonCodeMapper.insertParents(pI,AdminUserId);
+        if (!cI.isEmpty()) commonCodeMapper.insertChildren(cI,AdminUserId);
 
         // 3) 수정: 부모 → 자식 (단건씩)
         if (!pU.isEmpty()) {
-            for (var dto : pU) commonCodeMapper.updateParents(dto);
+            for (var dto : pU)commonCodeMapper.updateParents(dto, AdminUserId);
 
         }
         if (!cU.isEmpty()) {
-            for (var dto : cU) commonCodeMapper.updateChildren(dto);
+            for (var dto : cU) commonCodeMapper.updateChildren(dto,AdminUserId);
         }
     }
 
