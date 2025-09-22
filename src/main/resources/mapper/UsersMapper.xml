@@ -62,13 +62,15 @@
 
     <update id="updateEmployerStatus">
         UPDATE employer_users
-        SET employer_status = #{userStatus}
+        SET employer_status = #{userStatus},
+            updated_by = #{userPk}
         WHERE employer_user_id = #{userPk}
     </update>
 
     <update id="updateApplicantStatus">
         UPDATE applicants
-        SET user_status = #{userStatus}
+        SET user_status = #{userStatus},
+            updated_by = #{userPk}
         WHERE user_id = #{userPk}
     </update>
 

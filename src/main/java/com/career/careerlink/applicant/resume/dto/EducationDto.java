@@ -8,6 +8,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,7 +67,7 @@ public class EducationDto {
                 .endDate(this.endDate)
                 .graduateStatus(this.graduateStatus)
                 .createdBy(createdBy)
-                .updatedBy(createdBy)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -82,5 +83,6 @@ public class EducationDto {
         entity.setEndDate(this.endDate);
         entity.setGraduateStatus(this.graduateStatus);
         entity.setUpdatedBy(updatedBy);
+        entity.setUpdatedAt(LocalDateTime.now());
     }
 }

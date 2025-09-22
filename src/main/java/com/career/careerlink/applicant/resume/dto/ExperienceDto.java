@@ -5,6 +5,7 @@ import com.career.careerlink.applicant.resume.entity.Resume;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,7 +49,7 @@ public class ExperienceDto {
                 .endDate(this.endDate)
                 .description(this.description)
                 .createdBy(createdBy)
-                .updatedBy(createdBy)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -59,5 +60,6 @@ public class ExperienceDto {
         entity.setEndDate(this.endDate);
         entity.setDescription(this.description);
         entity.setUpdatedBy(updatedBy);
+        entity.setUpdatedAt(LocalDateTime.now());
     }
 }

@@ -28,11 +28,17 @@ public class CoverLetterItem {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    private String createdBy;
-    private String updatedBy;
-
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "created_by", nullable = false, length = 36)
+    private String createdBy;
+
+    @Column(name = "updated_by", length = 36)
+    private String updatedBy;
 
     @PrePersist
     public void onCreate() {

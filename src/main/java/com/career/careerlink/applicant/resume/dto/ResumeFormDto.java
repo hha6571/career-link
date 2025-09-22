@@ -5,6 +5,7 @@ import com.career.careerlink.applicant.resume.entity.Resume;
 import com.career.careerlink.common.enums.YnType;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -28,7 +29,7 @@ public class ResumeFormDto {
                 .isActive(this.isActive)
                 .userId(userId)
                 .createdBy(userId)
-                .updatedBy(userId)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 }

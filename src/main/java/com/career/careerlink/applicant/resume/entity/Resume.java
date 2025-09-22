@@ -32,17 +32,17 @@ public class Resume {
     @Column(name = "is_active", nullable = false, columnDefinition = "enum('Y','N') default 'Y'")
     private YnType isActive;
 
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Column(name = "created_by", nullable = false, length = 36)
     private String createdBy;
 
-    @Column(name = "updated_by", nullable = false, length = 36)
+    @Column(name = "updated_by", length = 36)
     private String updatedBy;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {

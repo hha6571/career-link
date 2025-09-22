@@ -22,10 +22,10 @@ public class FaqDto {
     private String question;
     private String answer;
     private Category category;
-    private String createdBy;
-    private String updatedBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
 
     // Entity → DTO 변환
     public static FaqDto of(Faq faq) {
@@ -34,10 +34,10 @@ public class FaqDto {
                 .question(faq.getQuestion())
                 .answer(faq.getAnswer())
                 .category(faq.getCategory())
-                .createdBy(faq.getCreatedBy())
-                .updatedBy(faq.getUpdatedBy())
                 .createdAt(faq.getCreatedAt())
                 .updatedAt(faq.getUpdatedAt())
+                .createdBy(faq.getCreatedBy())
+                .updatedBy(faq.getUpdatedBy())
                 .build();
     }
 
@@ -54,10 +54,8 @@ public class FaqDto {
                 .question(this.question)
                 .answer(this.answer)
                 .category(this.category)
-                .createdBy(userId)
-                .updatedBy(userId)
                 .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdBy(userId)
                 .build();
     }
 
@@ -73,6 +71,6 @@ public class FaqDto {
 
     private String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null ? authentication.getName() : "anonymous";
+        return authentication.getName();
     }
 }

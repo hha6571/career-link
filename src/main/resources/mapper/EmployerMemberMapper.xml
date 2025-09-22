@@ -73,7 +73,8 @@
             AND me.employer_id      = eu.employer_id
         SET eu.is_approved = 'Y',
             eu.approved_at = CURRENT_TIMESTAMP,
-            eu.updated_at  = CURRENT_TIMESTAMP
+            eu.updated_at  = CURRENT_TIMESTAMP,
+            eu.updated_by =  #{employerUserId}
         WHERE eu.employer_user_id = #{targetEmployerUserId}
             AND eu.is_approved = 'N'
     </update>
@@ -85,7 +86,8 @@
         AND me.employer_id      = eu.employer_id
         SET eu.is_approved = 'Y',
         eu.approved_at = CURRENT_TIMESTAMP,
-        eu.updated_at  = CURRENT_TIMESTAMP
+        eu.updated_at  = CURRENT_TIMESTAMP,
+        eu.updated_by =  #{employerUserId}
         WHERE eu.is_approved = 'N'
         AND eu.employer_user_id IN
         <foreach collection="targetEmployerUserIds" item="id" open="(" separator="," close=")">

@@ -32,17 +32,17 @@ public class Faq {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    @Column(name = "created_by", length = 50)
-    private String createdBy;
-
-    @Column(name = "updated_by", length = 50)
-    private String updatedBy;
-
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "created_by", nullable = false, length = 36)
+    private String createdBy;
+
+    @Column(name = "updated_by", length = 36)
+    private String updatedBy;
 
     @PrePersist
     protected void onCreate() {

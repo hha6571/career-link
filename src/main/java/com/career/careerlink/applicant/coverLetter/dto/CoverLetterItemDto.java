@@ -4,6 +4,7 @@ import com.career.careerlink.applicant.coverLetter.entity.CoverLetter;
 import com.career.careerlink.applicant.coverLetter.entity.CoverLetterItem;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,7 @@ public class CoverLetterItemDto {
                 .title(this.title)
                 .content(this.content)
                 .createdBy(userId)
-                .updatedBy(userId)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -44,5 +45,6 @@ public class CoverLetterItemDto {
         entity.setTitle(this.title);
         entity.setContent(this.content);
         entity.setUpdatedBy(userId);
+        entity.setUpdatedAt(LocalDateTime.now());
     }
 }

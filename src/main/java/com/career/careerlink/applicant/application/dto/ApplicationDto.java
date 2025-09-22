@@ -32,7 +32,7 @@ public class ApplicationDto {
                 .status(ApplicationStatus.SUBMITTED)
                 .appliedAt(LocalDateTime.now())
                 .createdBy(userId)
-                .updatedBy(userId)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 

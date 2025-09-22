@@ -4,6 +4,7 @@ import com.career.careerlink.applicant.resume.entity.Resume;
 import com.career.careerlink.applicant.resume.entity.Skill;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ public class SkillDto {
                 .skillName(this.skillName)
                 .proficiency(this.proficiency)
                 .createdBy(createdBy)
-                .updatedBy(createdBy)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -46,5 +47,6 @@ public class SkillDto {
         entity.setSkillName(this.skillName);
         entity.setProficiency(this.proficiency);
         entity.setUpdatedBy(updatedBy);
+        entity.setUpdatedAt(LocalDateTime.now());
     }
 }

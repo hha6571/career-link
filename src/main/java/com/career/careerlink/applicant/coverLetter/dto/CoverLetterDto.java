@@ -59,7 +59,7 @@ public class CoverLetterDto {
                 .coverLetterTitle(this.coverLetterTitle)
                 .isActive(this.isActive)
                 .createdBy(userId)
-                .updatedBy(userId)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         if (this.items != null) {
@@ -73,6 +73,7 @@ public class CoverLetterDto {
         entity.setCoverLetterTitle(this.coverLetterTitle);
         entity.setIsActive(this.isActive);
         entity.setUpdatedBy(userId);
+        entity.setUpdatedAt(LocalDateTime.now());
 
         if (this.items != null) {
             if (entity.getItems() == null) {

@@ -52,7 +52,7 @@ public class ResumeDto {
                 .title(this.title)
                 .isActive(this.isActive)
                 .createdBy(createdBy)
-                .updatedBy(createdBy)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -60,5 +60,6 @@ public class ResumeDto {
         entity.setTitle(this.title);
         entity.setIsActive(this.isActive);
         entity.setUpdatedBy(updatedBy);
+        entity.setUpdatedAt(LocalDateTime.now());
     }
 }
