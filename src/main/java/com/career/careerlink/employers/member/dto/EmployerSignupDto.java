@@ -35,4 +35,6 @@ public class EmployerSignupDto {
     private UserStatus employerStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
 }

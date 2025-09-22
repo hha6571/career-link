@@ -36,4 +36,6 @@ public class SignupRequestDto {
     private UserStatus userStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
 }

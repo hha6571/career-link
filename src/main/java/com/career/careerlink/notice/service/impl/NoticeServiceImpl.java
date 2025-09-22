@@ -42,7 +42,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     @Transactional
-    public NoticeDetailDto getNotice(Long noticeId) {
+    public NoticeDetailDto getNotice(Integer noticeId) {
         Notice notice = noticeDetailRepository.findById(noticeId)
                 .orElseThrow(() -> new CareerLinkException("공지사항 내용이 없습니다."));
         notice.increaseViewCount();

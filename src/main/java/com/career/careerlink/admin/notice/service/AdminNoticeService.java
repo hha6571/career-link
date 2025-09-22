@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AdminNoticeService {
     Page<NoticeDto> getNotices(NoticeRequestDto req);
-    Long updateNotice(NoticeDetailDto dto, MultipartFile file);
-    Long createNotice(NoticeDetailDto dto, MultipartFile file);
-    void deleteNotice(Long id);
+    Integer updateNotice(NoticeDetailDto dto, MultipartFile file);
+    Integer createNotice(NoticeDetailDto dto, MultipartFile file);
+    void deleteNotice(Integer id);
 }

@@ -45,7 +45,7 @@ public class AdminNoticeServiceImpl implements AdminNoticeService {
 
     @Override
     @Transactional
-    public Long createNotice(NoticeDetailDto dto, MultipartFile file) {
+    public Integer createNotice(NoticeDetailDto dto, MultipartFile file) {
         String fileUrl = null;
         if (file != null && !file.isEmpty()) {
             fileUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, file);
@@ -58,7 +58,7 @@ public class AdminNoticeServiceImpl implements AdminNoticeService {
 
     @Override
     @Transactional
-    public Long updateNotice(NoticeDetailDto dto, MultipartFile file) {
+    public Integer updateNotice(NoticeDetailDto dto, MultipartFile file) {
         Notice notice = noticeDetailRepository.findById(dto.getNoticeId())
                 .orElseThrow(() -> new CareerLinkException("공지사항이 존재하지 않습니다."));
 
@@ -77,7 +77,7 @@ public class AdminNoticeServiceImpl implements AdminNoticeService {
 
     @Override
     @Transactional
-    public void deleteNotice(Long id) {
+    public void deleteNotice(Integer id) {
         Notice notice = noticeDetailRepository.findById(id)
                 .orElseThrow(() -> new CareerLinkException("공지사항이 존재하지 않습니다."));
         notice.softDelete();

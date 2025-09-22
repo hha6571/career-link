@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -31,6 +32,8 @@ public class EmployerInformationDto {
     private String homepageUrl;
     private String companyLogoUrl;
     private int employeeCount;
+    private LocalDateTime updatedAt;
+    private String updatedBy;
 
     public EmployerInformationDto(Employer e) {
         this.employerId = e.getEmployerId();
@@ -49,5 +52,7 @@ public class EmployerInformationDto {
         this.homepageUrl = e.getHomepageUrl();
         this.companyLogoUrl = e.getCompanyLogoUrl();
         this.employeeCount = e.getEmployeeCount();
+        this.updatedAt = e.getUpdatedAt();
+        this.updatedBy = e.getUpdatedBy();
     }
 }

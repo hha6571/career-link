@@ -66,5 +66,6 @@ public class ApplicantDto {
         applicant.setAgreeMarketing(this.agreeMarketing);
         applicant.setGender(this.gender);
         applicant.setUpdatedAt(LocalDateTime.now());
+        applicant.setUpdatedBy(this.updatedBy);
     }
 }

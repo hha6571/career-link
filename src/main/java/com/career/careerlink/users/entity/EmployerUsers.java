@@ -103,6 +103,12 @@ public class EmployerUsers {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "created_by")
+    private String createdBy;
+
+    @Column(name = "updated_by")
+    private String updatedBy;
+
     @PrePersist
     public void prePersist() {
         if (this.role == null) this.role = "employee";

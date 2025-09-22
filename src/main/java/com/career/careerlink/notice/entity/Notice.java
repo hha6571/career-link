@@ -21,7 +21,7 @@ public class Notice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notice_id")
-    private Long noticeId;
+    private Integer noticeId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "notice_type", nullable = false, length = 50)
@@ -58,10 +58,10 @@ public class Notice {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Column(name = "created_by", length = 50)
+    @Column(name = "created_by", length = 36)
     private String createdBy;
 
-    @Column(name = "updated_by", length = 50)
+    @Column(name = "updated_by", length = 36)
     private String updatedBy;
 
     @CreatedDate

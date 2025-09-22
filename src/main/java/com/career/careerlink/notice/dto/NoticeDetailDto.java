@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NoticeDetailDto {
-    private Long noticeId;              // 공지 ID
+    private Integer noticeId;              // 공지 ID
     private NoticeType noticeType;      // 공지 유형
     private String title;               // 제목
     private String content;             // 공지 내용 (Quill HTML)

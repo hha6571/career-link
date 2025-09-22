@@ -29,7 +29,7 @@ public class AdminNoticeController {
 
     @SkipWrap
     @PostMapping(value = "/saveNotice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Long createNotice(
+    public Integer createNotice(
             @RequestPart("dto") NoticeDetailDto dto,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) {
@@ -38,7 +38,7 @@ public class AdminNoticeController {
 
     @SkipWrap
     @PutMapping(value = "/saveNotice/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Long updateNotice(
+    public Integer updateNotice(
             @RequestPart("dto") NoticeDetailDto dto,
             @RequestPart(value = "file", required = false) MultipartFile file) {
         return adminNoticeService.updateNotice(dto, file);
@@ -46,7 +46,7 @@ public class AdminNoticeController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/deleteNotice/{id}")
-    public void deleteNotice(@PathVariable Long id) {
+    public void deleteNotice(@PathVariable Integer id) {
         adminNoticeService.deleteNotice(id);
     }
 }

@@ -24,7 +24,7 @@ public class NoticeController {
     }
 
     @GetMapping("/getNotice/{id}")
-    public NoticeDetailDto getNotice(@PathVariable("id") Long noticeId) {
+    public NoticeDetailDto getNotice(@PathVariable("id") Integer noticeId) {
         return noticeService.getNotice(noticeId);
     }
 

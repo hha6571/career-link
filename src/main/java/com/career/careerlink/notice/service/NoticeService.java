@@ -7,5 +7,5 @@ import org.springframework.data.domain.Page;
 
 public interface NoticeService {
     Page<NoticeDto> getCommonNotices(NoticeRequestDto req);
-    NoticeDetailDto getNotice(Long noticeId);
+    NoticeDetailDto getNotice(Integer noticeId);
     }

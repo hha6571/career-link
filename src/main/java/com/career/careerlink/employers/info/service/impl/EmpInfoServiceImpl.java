@@ -68,11 +68,11 @@ public class EmpInfoServiceImpl implements EmpInfoService {
      */
     @Override
     public void companyRegistrationRequest(@RequestPart("dto") EmployerRegistrationDto dto, @RequestPart("file") MultipartFile file) {
-        String generatedUserId = UserIdGenerator.generate("EMP");
+        String generatedEmpId = UserIdGenerator.generate("EMP");
         String url = s3Service.uploadFile(S3UploadType.BUSINESS_CERTIFICATE, file);
 
         Employer newEmployers = Employer.builder()
-                .employerId(generatedUserId)
+                .employerId(generatedEmpId)
                 .companyName(dto.getCompanyName())
                 .bizRegNo(dto.getBizRegNo())
                 .bizRegistrationUrl(url)
@@ -85,6 +85,7 @@ public class EmpInfoServiceImpl implements EmpInfoService {
                 .agreeMarketing(dto.getAgreeMarketing())
                 .createdAt(dto.getCreatedAt())
                 .updatedAt(dto.getUpdatedAt())
+                .createdBy(generatedEmpId)
                 .build();
 
         employerRepository.save(newEmployers);
@@ -125,6 +126,8 @@ public class EmpInfoServiceImpl implements EmpInfoService {
         employer.setCompanyIntro(dto.getCompanyIntro());
         employer.setHomepageUrl(dto.getHomepageUrl());
         employer.setEmployeeCount(dto.getEmployeeCount());
+        employer.setUpdatedAt(dto.getUpdatedAt());
+        employer.setUpdatedBy(dto.getUpdatedBy());
 
         // 로고 업로드: 새로 업로드되면 교체
         if (companyLogo != null && !companyLogo.isEmpty()) {
@@ -173,6 +176,8 @@ public class EmpInfoServiceImpl implements EmpInfoService {
                 .homepageUrl(e.getHomepageUrl())
                 .companyLogoUrl(e.getCompanyLogoUrl())
                 .employeeCount(e.getEmployeeCount())
+                .updatedBy(e.getUpdatedBy())
+                .updatedAt(e.getUpdatedAt())
                 .build();
     }
 }
