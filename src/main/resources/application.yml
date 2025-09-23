@@ -52,3 +52,20 @@ spring:
           auth: true
           starttls:
             enable: true
+
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_CLOUD_ACCESS_KEY}
+        secret-key: ${AWS_CLOUD_SECRET_KEY}
+      region:
+        static: ${AWS_REGION}
+        auto: false
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+      stack:
+        auto: false
+
+  coolsms:
+    api-key: ${COOLSMS_API_KEY}
+    secret-key: ${COOLSMS_SECRET_KEY}
