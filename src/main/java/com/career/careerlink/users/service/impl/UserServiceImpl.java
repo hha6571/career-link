@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false) // 운영 배포땐 true로 설정
+                .secure(true) // 운영 배포땐 true로 설정
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
                 .sameSite("Strict")
@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(false) // 운영에선 true
+                .secure(true) // 운영에선 true
                 .path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
                 .sameSite("Strict")
@@ -176,7 +176,7 @@ public class UserServiceImpl implements UserService {
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(true)
-                .secure(false) // 운영 배포땐 true로 설정
+                .secure(true) // 운영 배포땐 true로 설정
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
                 .sameSite("Strict")

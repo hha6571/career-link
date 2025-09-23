@@ -1,0 +1,54 @@
+spring:
+  application:
+    name:
+
+  profiles:
+    active: prod
+
+  jwt:
+    header: Authorization
+    secret: ${JWT_SECRET}
+    token-validity-in-seconds: 86400
+
+  datasource:
+    url: ${MYSQL_DB_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_USER_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  data:
+    redis:
+      host: ${REDIS_URL}
+      port : ${REDIS_PORT}
+      password : ${REDIS_PASSWORD}
+
+  logging:
+    level:
+      root: INFO
+      com.career.careerlink: DEBUG
+      org.springframework.security: DEBUG
+
+  jackson:
+    coercion:
+      allow-empty-string-to-null: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GOOGLE_EMAIL_USERNAME}
+    password: ${GOOGLE_EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
