@@ -109,6 +109,7 @@ public class UserServiceImpl implements UserService {
                 .httpOnly(true)
                 .secure(true) // 운영 배포땐 true로 설정
                 .path("/")
+                .domain(".careerlink.online")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
                 .sameSite("None")
                 .build();
@@ -119,6 +120,7 @@ public class UserServiceImpl implements UserService {
                 .httpOnly(true)
                 .secure(true) // 운영에선 true
                 .path("/")
+                .domain(".careerlink.online")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
                 .sameSite("None")
                 .build();
@@ -178,6 +180,7 @@ public class UserServiceImpl implements UserService {
                 .httpOnly(true)
                 .secure(true) // 운영 배포땐 true로 설정
                 .path("/")
+                .domain(".careerlink.online")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
                 .sameSite("None")
                 .build();
