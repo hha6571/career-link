@@ -3,6 +3,10 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
 
+server:
+  servlet:
+    context-path: /api
+
 spring:
   application:
     name:
