@@ -33,33 +33,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         String[] permitAllUrls = {
-                "/users/check-id",
-                "/users/signup",
-                "/users/login",
+                "/api/users/check-id",
+                "/api/users/signup",
+                "/api/users/login",
                 "/emp/check-bizRegNo",
                 "/emp/registration-requests",
                 "/oauth/social/login",
-                "/users/send-id-code",
-                "/users/verify-id-code",
-                "/users/send-pwd-code",
-                "/users/verify-pwd-code",
-                "/users/reset-password",
-                "/users/send-sms",
-                "/users/verify-phone-code",
-                "/users/send-email-code",
-                "/users/verify-email-code",
-                "/users/reactivate/request",
-                "/users/reactivate/verify",
-                "/emp/signup",
-                "/common/**",
-                "/job/filters",
-                "/job/jobList",
-                "/job/job-posting/detail",
-                "/job/job-posting/hot",
-                "/notice/**",
-                "/faq/**",
-                "/main/**",
-                "/public/**"
+                "/api/users/send-id-code",
+                "/api/users/verify-id-code",
+                "/api/users/send-pwd-code",
+                "/api/users/verify-pwd-code",
+                "/api/users/reset-password",
+                "/api/users/send-sms",
+                "/api/users/verify-phone-code"
+                ,"/api/users/send-email-code"
+                ,"/api/users/verify-email-code"
+                ,"/api/users/reactivate/request"
+                ,"/api/users/reactivate/verify"
+                ,"/emp/signup"
+                ,"/common/**"
+                ,"/job/filters"
+                ,"/job/jobList"
+                ,"/job/job-posting/detail"
+                ,"/job/job-posting/hot"
+                ,"/notice/**"
+                ,"/faq/**"
+                ,"/main/**"
+                ,"/public/**"
         };
 
         http

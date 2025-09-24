@@ -110,7 +110,7 @@ public class UserServiceImpl implements UserService {
                 .secure(true) // 운영 배포땐 true로 설정
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
 
         response.setHeader("Set-Cookie", refreshCookie.toString());
@@ -120,7 +120,7 @@ public class UserServiceImpl implements UserService {
                 .secure(true) // 운영에선 true
                 .path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
 
         response.addHeader("Set-Cookie", accessCookie.toString());
@@ -179,7 +179,7 @@ public class UserServiceImpl implements UserService {
                 .secure(true) // 운영 배포땐 true로 설정
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
 
         response.setHeader("Set-Cookie", refreshCookie.toString());

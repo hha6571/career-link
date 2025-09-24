@@ -79,7 +79,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     private void sendApprovalEmail(Employer employer) {
         String toEmail = employer.getCompanyEmail();
         String subject = "[CareerLinl] 기업 승인 완료 안내";
-        String url = "https://careerlink.online/api/emp/signup?employerId=" + employer.getEmployerId(); // 운영시 https로 변경
+        String url = "https://careerlink.online/emp/signup?employerId=" + employer.getEmployerId(); // 운영시 https로 변경
 
         Context context = new Context();
         context.setVariable("companyName", employer.getCompanyName());

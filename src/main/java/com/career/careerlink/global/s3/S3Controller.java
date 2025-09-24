@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import static com.career.careerlink.global.util.FileNameUtils.extractOriginalFileName;
 
 @RestController
-@RequestMapping("/s3")
+@RequestMapping("/api/s3")
 @RequiredArgsConstructor
 public class S3Controller {
 
