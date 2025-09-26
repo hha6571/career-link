@@ -90,7 +90,6 @@ public class Applicant {
             this.userStatus = UserStatus.ACTIVE;
         }
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
     }
 
     @PreUpdate

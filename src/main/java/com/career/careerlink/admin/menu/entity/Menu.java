@@ -66,7 +66,6 @@ public class Menu {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
     }
 
     @PreUpdate
