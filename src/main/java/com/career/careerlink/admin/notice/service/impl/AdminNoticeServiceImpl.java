@@ -34,43 +34,61 @@ public class AdminNoticeServiceImpl implements AdminNoticeService {
         int page = Optional.ofNullable(req.getPage()).orElse(0);
         int size = Optional.ofNullable(req.getSize()).orElse(10);
 
-        // 0-based page → offset
         int safePage = Math.max(page, 0);
         int safeSize = Math.max(size, 1);
         int offset = safePage * safeSize;
         long total = noticeMapper.getNoticeCount(req);
         List<NoticeDto> rows = noticeMapper.getAdminNotices(req, offset, safeSize);
-        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize),total);
+        return new PageImpl<>(rows, PageRequest.of(safePage, safeSize), total);
     }
 
     @Override
     @Transactional
-    public Integer createNotice(NoticeDetailDto dto, MultipartFile file) {
-        String fileUrl = null;
-        if (file != null && !file.isEmpty()) {
-            fileUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, file);
+    public Integer createNotice(NoticeDetailDto dto, MultipartFile thumbnailFile, MultipartFile attachmentFile) {
+        String thumbnailUrl = null;
+        String attachmentUrl = null;
+
+        // 썸네일 업로드
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            thumbnailUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, thumbnailFile);
         }
 
-        Notice notice = dto.toEntity(fileUrl);
+        // 첨부파일 업로드
+        if (attachmentFile != null && !attachmentFile.isEmpty()) {
+            attachmentUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, attachmentFile);
+        }
+
+        Notice notice = dto.toEntity(thumbnailUrl, attachmentUrl);
         Notice saved = noticeDetailRepository.save(notice);
         return saved.getNoticeId();
     }
 
     @Override
     @Transactional
-    public Integer updateNotice(NoticeDetailDto dto, MultipartFile file) {
-        Notice notice = noticeDetailRepository.findById(dto.getNoticeId())
+    public Integer updateNotice(Integer id, NoticeDetailDto dto, MultipartFile thumbnailFile, MultipartFile attachmentFile) {
+        Notice notice = noticeDetailRepository.findById(id)
                 .orElseThrow(() -> new CareerLinkException("공지사항이 존재하지 않습니다."));
 
-        String fileUrl = notice.getFileUrl();
-        if (file != null && !file.isEmpty()) {
-            fileUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, file);
-            if (notice.getFileUrl() != null) {
-                s3Service.deleteFileByUrl(notice.getFileUrl());
+        String thumbnailUrl = notice.getThumbnailUrl();
+        String attachmentUrl = notice.getAttachmentUrl();
+
+        // 썸네일 교체
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            thumbnailUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, thumbnailFile);
+            if (notice.getThumbnailUrl() != null) {
+                s3Service.deleteFileByUrl(notice.getThumbnailUrl());
             }
         }
 
-        dto.updateEntity(notice, fileUrl);
+        // 첨부파일 교체
+        if (attachmentFile != null && !attachmentFile.isEmpty()) {
+            attachmentUrl = s3Service.uploadFile(S3UploadType.NOTICE_FILE, attachmentFile);
+            if (notice.getAttachmentUrl() != null) {
+                s3Service.deleteFileByUrl(notice.getAttachmentUrl());
+            }
+        }
+
+        dto.updateEntity(notice, thumbnailUrl, attachmentUrl);
         Notice updated = noticeDetailRepository.save(notice);
         return updated.getNoticeId();
     }

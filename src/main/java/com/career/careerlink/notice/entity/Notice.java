@@ -34,8 +34,11 @@ public class Notice {
     @Column(name = "content", columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content; // Quill HTML
 
-    @Column(name = "file_url", length = 500)
-    private String fileUrl;
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
+    @Column(name = "attachment_url")
+    private String attachmentUrl;
 
     @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
@@ -75,6 +78,7 @@ public class Notice {
     public void softDelete() {
         if (YN.N.equals(this.isDeleted)) {
             this.isDeleted = YN.Y;
+            this.updatedAt = LocalDateTime.now();
         }
     }
 

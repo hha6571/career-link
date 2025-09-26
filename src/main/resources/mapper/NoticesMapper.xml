@@ -23,8 +23,8 @@
         notice_id    AS noticeId,
         notice_type  AS noticeType,
         title        AS title,
-        content      AS content,
-        file_url     AS fileUrl,
+        thumbnail_url   AS thumbnailUrl,
+        attachment_url  AS attachmentUrl,
         view_count   AS viewCount,
         is_top_fixed AS isTopFixed,
         is_exposed   AS isExposed,
@@ -72,8 +72,9 @@
         WHERE is_deleted = 'N'
         AND is_exposed = 'Y'
         AND (
-        (start_date IS NULL OR start_date &lt;= CURRENT_DATE)
-        AND (end_date IS NULL OR end_date &gt;= CURRENT_DATE)
+        (start_date IS NULL OR start_date &lt;= CURRENT_DATE())   -- 오늘 00:00까지 유효
+        AND (end_date IS NULL OR end_date &gt;= DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) - INTERVAL 1 SECOND)
+        -- 오늘 23:59:59까지 유효
         )
         <if test="noticeType != null and noticeType != ''">
             AND notice_type = #{noticeType}
@@ -85,6 +86,8 @@
         notice_id    AS noticeId,
         notice_type  AS noticeType,
         title,
+        thumbnail_url   AS thumbnailUrl,
+        attachment_url  AS attachmentUrl,
         view_count   AS viewCount,
         is_top_fixed AS isTopFixed,
         is_exposed   AS isExposed,
@@ -95,6 +98,11 @@
         FROM notices
         WHERE is_deleted = 'N'
           AND is_exposed = 'Y'
+          AND (
+            (start_date IS NULL OR start_date &lt;= CURRENT_DATE())   -- 오늘 00:00까지 유효
+            AND (end_date IS NULL OR end_date &gt;= DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) - INTERVAL 1 SECOND)
+            -- 오늘 23:59:59까지 유효
+            )
         <if test="req.noticeType != null and req.noticeType != ''">
             AND notice_type = #{req.noticeType}
         </if>

@@ -31,17 +31,21 @@ public class AdminNoticeController {
     @PostMapping(value = "/saveNotice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Integer createNotice(
             @RequestPart("dto") NoticeDetailDto dto,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
+            @RequestPart(value = "attachmentFile", required = false) MultipartFile attachmentFile
     ) {
-        return adminNoticeService.createNotice(dto, file);
+        return adminNoticeService.createNotice(dto, thumbnailFile, attachmentFile);
     }
 
     @SkipWrap
     @PutMapping(value = "/saveNotice/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Integer updateNotice(
+            @PathVariable Integer id,
             @RequestPart("dto") NoticeDetailDto dto,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
-        return adminNoticeService.updateNotice(dto, file);
+            @RequestPart(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
+            @RequestPart(value = "attachmentFile", required = false) MultipartFile attachmentFile
+    ) {
+        return adminNoticeService.updateNotice(id, dto, thumbnailFile, attachmentFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
