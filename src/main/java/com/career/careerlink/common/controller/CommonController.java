@@ -4,7 +4,10 @@ import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
 import com.career.careerlink.admin.menu.dto.MenuDto;
 import com.career.careerlink.common.service.CommonService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -16,8 +19,8 @@ public class CommonController {
     private final CommonService commonService;
 
     @GetMapping("/menus")
-    public List<MenuDto> getAllMenus(@RequestHeader("Authorization") String accessToken) {
-        return commonService.getAllMenus(accessToken);
+    public List<MenuDto> getAllMenus() {
+        return commonService.getAllMenus();
     }
 
     @GetMapping("/getAllMenusByPublic")

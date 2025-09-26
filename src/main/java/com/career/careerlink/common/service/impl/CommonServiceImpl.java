@@ -1,13 +1,17 @@
 package com.career.careerlink.common.service.impl;
 
 import com.career.careerlink.admin.commonCode.dto.CommonCodeDto;
+import com.career.careerlink.admin.commonCode.mapper.CommonCodeMapper;
 import com.career.careerlink.admin.menu.dto.MenuDto;
 import com.career.careerlink.admin.menu.entity.Menu;
-import com.career.careerlink.admin.commonCode.mapper.CommonCodeMapper;
 import com.career.careerlink.admin.menu.repository.MenuRepository;
+import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.common.service.CommonService;
-import com.career.careerlink.global.security.JwtTokenProvider;
+import com.career.careerlink.global.exception.CareerLinkException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -17,13 +21,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommonServiceImpl implements CommonService {
 
-    private final JwtTokenProvider jwtTokenProvider;
     private final MenuRepository menuRepository;
     private final CommonCodeMapper commonCodeMapper;
 
     @Override
-    public List<MenuDto> getAllMenus(String accessToken) {
-        String userRole = jwtTokenProvider.getRole(accessToken.replace("Bearer ",""));
+    public List<MenuDto> getAllMenus() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new CareerLinkException(ErrorCode.UNAUTHORIZED, "인증 정보가 없습니다.");
+        }
+
+        String userRole = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)      // e.g. ROLE_USER
+                .map(a -> a.startsWith("ROLE_") ? a.substring(5) : a) // USER
+                .findFirst()
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.UNAUTHORIZED, "권한이 없습니다."));
         List<Menu> menus = menuRepository.findByAccessRoleAndIsActiveOrderByDisplayOrderAscMenuIdAsc(userRole,"Y");
         return MenuDto.listOf(menus);
     }

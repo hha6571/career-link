@@ -5,18 +5,20 @@ import com.career.careerlink.employers.member.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.global.redis.RedisUtil;
 import com.career.careerlink.global.security.JwtTokenProvider;
+import com.career.careerlink.global.util.CookieUtil;
 import com.career.careerlink.global.util.UserIdGenerator;
-import com.career.careerlink.users.dto.SignupRequestDto;
-import com.career.careerlink.users.entity.Applicant;
-import com.career.careerlink.users.repository.ApplicantRepository;
 import com.career.careerlink.users.dto.LoginRequestDto;
-import com.career.careerlink.users.dto.TokenRequestDto;
+import com.career.careerlink.users.dto.SignupRequestDto;
 import com.career.careerlink.users.dto.TokenResponse;
+import com.career.careerlink.users.entity.Applicant;
 import com.career.careerlink.users.entity.LoginUser;
 import com.career.careerlink.users.entity.enums.UserStatus;
 import com.career.careerlink.users.repository.AdminRepository;
+import com.career.careerlink.users.repository.ApplicantRepository;
 import com.career.careerlink.users.repository.LoginUserRepository;
 import com.career.careerlink.users.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
     private final AdminRepository adminRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisUtil redisUtil;
+    private final CookieUtil cookieUtil;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -107,7 +110,7 @@ public class UserServiceImpl implements UserService {
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true) // 운영 배포땐 true로 설정
+                .secure(false) // 운영 배포땐 true로 설정
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
                 .sameSite("Strict")
@@ -117,7 +120,7 @@ public class UserServiceImpl implements UserService {
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(true) // 운영에선 true
+                .secure(false) // 운영에선 true
                 .path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
                 .sameSite("Strict")
@@ -150,57 +153,90 @@ public class UserServiceImpl implements UserService {
                         });
             }
         }
-        return new TokenResponse(accessToken, refreshToken, expiresIn);
+        return new TokenResponse(expiresIn, employerId, user.getRole());
     }
 
     @Override
-    public TokenResponse reissue(TokenRequestDto dto, HttpServletResponse response) {
-        if (!jwtTokenProvider.validateToken(dto.getRefreshToken())) {
-            throw new RuntimeException("유효하지 않은 리프레시 토큰");
+    public void reissue(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = getCookieValue(request, "refreshToken");
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            throw new CareerLinkException(ErrorCode.UNAUTHORIZED, "토큰이 유효하지 않거나 만료되었습니다.");
         }
 
-        String userId = jwtTokenProvider.getUserId(dto.getRefreshToken());
-        String role = jwtTokenProvider.getRole(dto.getRefreshToken());
-        String employerId = jwtTokenProvider.getEmployerId(dto.getRefreshToken());
+        String userId = jwtTokenProvider.getUserId(refreshToken);
+        String role = jwtTokenProvider.getRole(refreshToken);
+        String employerId = jwtTokenProvider.getEmployerId(refreshToken);
+
         String redisRefresh = redisUtil.get("refresh:" + userId);
-
-        if (!dto.getRefreshToken().equals(redisRefresh)) {
-            throw new RuntimeException("불일치 리프레시 토큰");
+        if (redisRefresh == null || !refreshToken.equals(redisRefresh)) {
+            throw new CareerLinkException(ErrorCode.UNAUTHORIZED, "토큰이 유효하지 않거나 만료되었습니다.");
         }
 
-        String newAccessToken = jwtTokenProvider.createAccessToken(userId, role, employerId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId, role, employerId);
-        long expiresIn = jwtTokenProvider.getRemainingTime(newAccessToken);
+        String newAccess = jwtTokenProvider.createAccessToken(userId, role, employerId);
+        String newRefresh = jwtTokenProvider.createRefreshToken(userId, role, employerId);
 
-        redisUtil.set("refresh:" + userId, newRefreshToken, jwtTokenProvider.getRefreshTokenExpiration());
+        redisUtil.set("refresh:" + userId, newRefresh, jwtTokenProvider.getRefreshTokenExpiration());
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
-                .httpOnly(true)
-                .secure(true) // 운영 배포땐 true로 설정
-                .path("/")
-                .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
-                .sameSite("Strict")
-                .build();
+        ResponseCookie accessCookie = cookieUtil.buildCookie(
+                "accessToken", newAccess, jwtTokenProvider.getAccessTokenExpiration() / 1000);
+        ResponseCookie refreshCookie = cookieUtil.buildCookie(
+                "refreshToken", newRefresh, jwtTokenProvider.getRefreshTokenExpiration() / 1000);
 
-        response.setHeader("Set-Cookie", refreshCookie.toString());
-        System.out.println("==================토큰 재발급 완료 ===========");
-        return new TokenResponse(newAccessToken, newRefreshToken, expiresIn);
+        response.addHeader("Set-Cookie", accessCookie.toString());
+        response.addHeader("Set-Cookie", refreshCookie.toString());
     }
 
     @Override
-    public void logout(String accessToken) {
-        String token = accessToken.replace("Bearer ", "");
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        String accessToken = getCookieValue(request, "accessToken");
 
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new RuntimeException("유효하지 않은 토큰");
+        if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
+            String userId = jwtTokenProvider.getUserId(accessToken);
+            redisUtil.delete("refresh:" + userId);
+
+            long remainTime = jwtTokenProvider.getRemainingTime(accessToken);
+            redisUtil.set("blacklist:" + accessToken, "logout", remainTime);
         }
 
-        String userId = jwtTokenProvider.getUserId(token);
-        redisUtil.delete("refresh:" + userId);
+        // 쿠키 삭제
+        response.addHeader("Set-Cookie", cookieUtil.deleteCookie("accessToken").toString());
+        response.addHeader("Set-Cookie", cookieUtil.deleteCookie("refreshToken").toString());
+    }
 
-        long remainTime = jwtTokenProvider.getRemainingTime(token);
-        redisUtil.set("blacklist:" + token, "logout", remainTime);
-    System.out.println("==================로그아웃처리 완료 ===========");
+    public TokenResponse me(HttpServletRequest request) {
+        String accessToken = getCookieValue(request, "accessToken");
+        if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
+            throw new CareerLinkException(ErrorCode.UNAUTHORIZED, "토큰이 유효하지 않거나 만료되었습니다.");
+        }
+
+        // 로그아웃 블랙리스트 체크
+        String black = redisUtil.get("blacklist:" + accessToken);
+        if (black != null) {
+            throw new CareerLinkException(ErrorCode.UNAUTHORIZED, "토큰이 유효하지 않거나 만료되었습니다.");
+        }
+
+        String role = jwtTokenProvider.getRole(accessToken);
+        String employerId = jwtTokenProvider.getEmployerId(accessToken);
+
+        long remainingMs = jwtTokenProvider.getRemainingTime(accessToken); // TTL(ms)
+        long expiresAtMs = System.currentTimeMillis() + Math.max(0L, remainingMs);
+
+        return TokenResponse.builder()
+                .role(role)
+                .employerId(employerId)
+                .accessTokenExpiresAt(expiresAtMs)
+                .build();
+    }
+
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie c : cookies) {
+            if (name.equals(c.getName())) {
+                return c.getValue();
+            }
+        }
+        return null;
     }
 
     /**

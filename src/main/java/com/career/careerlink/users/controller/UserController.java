@@ -4,6 +4,7 @@ import com.career.careerlink.common.send.UserVerificationService;
 import com.career.careerlink.global.response.SkipWrap;
 import com.career.careerlink.users.dto.*;
 import com.career.careerlink.users.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.sdk.message.response.SingleMessageSentResponse;
@@ -78,67 +79,36 @@ public class UserController {
         return userVerificationService.verifyEmailCode(request.userName(), request.email(), request.code());
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
-//        return ResponseEntity.ok(userService.login(dto, response));
-//    }
     /**
-     * 변경 요약 / 사용 가이드
-     *
-     * 1) 컨트롤러 리턴
-     *    - 굳이 ResponseEntity로 감싸지 말고, 도메인 객체(List/DTO/Page 등)만 그대로 반환.
-     *    - GlobalResponseAdvice 가 자동으로 { header, body, (optional) pagination } 형식으로 래핑된다.
-     *
-     * 2) 상태코드 기본 규칙(컨트롤러가 별도 지정 안 했을 때)
-     *    - GET    → 200 OK
-     *    - POST   → 201 Created
-     *    - PUT/PATCH → 200 OK
-     *    - DELETE → body == null 이면 204 No Content, body 있으면 200 OK
-     *
-     * 3) ResponseEntity를 써야 하는 경우
-     *    - 상태코드/헤더를 직접 지정해야 할 때만 ResponseEntity를 사용.
-     *    - 이 경우에도 body는 동일하게 {header, body, pagination}으로 감싸져 내려간다.
-     *    - 예) POST지만 200으로 내리고 싶다면:
-     *        return ResponseEntity.ok(service.doSomething(...));
-     *
-     * 4) 문자열 응답
-     *    - String을 리턴해도 기본적으로 JSON으로 래핑됨.
-     *
-     * 5) @SkipWrap (공통 래핑 건너뛰기)
-     *    - 파일 다운로드, 외부 콜백 등 “바디 원문 그대로” 내려야 할 때만 사용.
-     *    - 주의: SkipWrap을 쓰면 프런트 공통 인터셉터가 기대하는 포맷이 아닐 수 있다.
-     *    - 예)
-     *      @SkipWrapWW
-     *      @GetMapping("/health")
-     *      public String health() {
-     *          return "OK";  // 래핑 없이 그대로 "OK"
-     *      }
-     *
-     * 7) 요약
-     *    - 기본은 “그냥 DTO 리턴” → Advice가 메시지/코드/페이지네이션까지 처리.
-     *    - 특수한 상태/헤더가 필요하면 ResponseEntity.
-     *    - 바디 원문 그대로 내려야 하면 @SkipWrap.
+     * user 로그인
      */
-
     @PostMapping("/login")
     public TokenResponse login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         return userService.login(dto, response);
     }
 
+    /**
+     * 로그인 연장(토큰 재발급)
+     */
     @PostMapping("/reissue")
-    public ResponseEntity<TokenResponse> reissue(@CookieValue("refreshToken") String refreshToken,
-                                                 @RequestHeader("Authorization") String accessToken,
-                                                 HttpServletResponse response) {
-        TokenRequestDto dto = new TokenRequestDto();
-        dto.setAccessToken(accessToken);
-        dto.setRefreshToken(refreshToken);
-        return ResponseEntity.ok(userService.reissue(dto, response));
+    public void reissue(HttpServletRequest request, HttpServletResponse response) {
+        userService.reissue(request, response);
     }
 
+    /**
+     * 로그아웃
+     */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
-        userService.logout(token);
-        return ResponseEntity.ok().build();
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        userService.logout(request, response);
+    }
+
+    /**
+     * 세션 검증
+     */
+    @GetMapping("/auth/me")
+    public TokenResponse me(HttpServletRequest request) {
+        return userService.me(request);
     }
 
     /**
@@ -155,6 +125,7 @@ public class UserController {
      * @param request
      * @return verifyCode
      */
+    @SkipWrap
     @PostMapping("/verify-id-code")
     public Map<String, String> verifyIdCode(@RequestBody BasicVerifyCodeRequest request) {
         return userVerificationService.verifyIdCode(request.userName(), request.email(), request.code());
@@ -174,6 +145,7 @@ public class UserController {
      * @param request
      * @return 비밀번호 재설정을 위한 resetToken
      */
+    @SkipWrap
     @PostMapping("/verify-pwd-code")
     public Map<String, String> verifyPwdCode(@RequestBody VerifyPwdCodeRequest request) {
         String tempToken = userVerificationService.verifyPwdCode(

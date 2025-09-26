@@ -3,6 +3,9 @@ package com.career.careerlink.global.config;
 import com.career.careerlink.global.redis.RedisUtil;
 import com.career.careerlink.global.security.JwtAuthenticationFilter;
 import com.career.careerlink.global.security.JwtTokenProvider;
+import com.career.careerlink.global.security.oauth.OAuth2FailureHandler;
+import com.career.careerlink.global.security.oauth.OAuth2SuccessHandler;
+import com.career.careerlink.global.security.oauth.UnifiedOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,35 +34,27 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           UnifiedOAuth2UserService userService,
+                                           OAuth2FailureHandler failureHandler,
+                                           OAuth2SuccessHandler successHandler) throws Exception {
         String[] permitAllUrls = {
-                "/api/users/check-id",
-                "/api/users/signup",
-                "/api/users/login",
-                "/emp/check-bizRegNo",
-                "/emp/registration-requests",
-                "/oauth/social/login",
-                "/api/users/send-id-code",
-                "/api/users/verify-id-code",
-                "/api/users/send-pwd-code",
-                "/api/users/verify-pwd-code",
-                "/api/users/reset-password",
-                "/api/users/send-sms",
-                "/api/users/verify-phone-code"
-                ,"/api/users/send-email-code"
-                ,"/api/users/verify-email-code"
-                ,"/api/users/reactivate/request"
-                ,"/api/users/reactivate/verify"
+                "/emp/check-bizRegNo"
+                ,"/emp/registration-requests"
                 ,"/emp/signup"
-                ,"/common/**"
                 ,"/job/filters"
                 ,"/job/jobList"
                 ,"/job/job-posting/detail"
                 ,"/job/job-posting/hot"
+                ,"/common/**"
+                ,"/api/users/**"
                 ,"/notice/**"
                 ,"/faq/**"
                 ,"/main/**"
                 ,"/public/**"
+                ,"/oauth2/**"
+                ,"/login/**"
+                ,"/api/auth/link/**"
         };
 
         http
@@ -67,11 +62,18 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(permitAllUrls).permitAll()
+                        .requestMatchers("/api/users/reissue").authenticated()
+                        .requestMatchers("/api/users/auth/me").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(o -> o
+                        .userInfoEndpoint(u -> u.userService(userService))
+                        .failureHandler(failureHandler)
+                        .successHandler(successHandler)
+                );
         return http.build();
     }
 
@@ -87,6 +89,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of());
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
