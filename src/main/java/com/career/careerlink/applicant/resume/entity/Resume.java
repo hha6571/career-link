@@ -55,14 +55,18 @@ public class Resume {
     }
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("endDate DESC, startDate DESC")
     private List<Education> educations = new ArrayList<>();
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("startDate DESC")
     private List<Experience> experiences = new ArrayList<>();
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("acquiredDate DESC")
     private List<Certification> certifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("skillName ASC")
     private List<Skill> skills = new ArrayList<>();
 }

@@ -1,8 +1,8 @@
 package com.career.careerlink.applicant.resume.entity.enums;
 
 public enum GraduateStatus {
-    Y, // 졸업
-    N, // 중퇴
-    I, // 재학
-    L  // 휴학
+    GRADUATED,   // 졸업
+    EXPECTED,    // 졸업예정
+    ATTENDING,   // 재학
+    DROPPED      // 중퇴
 }
