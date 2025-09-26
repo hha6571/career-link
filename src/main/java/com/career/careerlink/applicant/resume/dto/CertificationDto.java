@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class CertificationDto {
                 .build();
     }
 
-    public static List<CertificationDto> listOf(List<Certification> entities) {
+    public static List<CertificationDto> listOf(Collection<Certification> entities) {
         if (entities == null) return Collections.emptyList();
         return entities.stream().map(CertificationDto::of).collect(Collectors.toList());
     }

@@ -1,5 +1,6 @@
 package com.career.careerlink.applicant.coverLetter.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class CoverLetterItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cover_letter_id", nullable = false)
+    @JsonIgnore
     private CoverLetter coverLetter;
 
     @Column(nullable = false, length = 200)

@@ -2,6 +2,7 @@ package com.career.careerlink.applicant.resume.entity;
 
 import com.career.careerlink.applicant.resume.entity.enums.EduType;
 import com.career.careerlink.applicant.resume.entity.enums.GraduateStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,7 @@ public class Education {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id", nullable = false)
+    @JsonIgnore
     private Resume resume;
 
     @Enumerated(EnumType.STRING)

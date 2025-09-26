@@ -1,13 +1,20 @@
 package com.career.careerlink.employers.jobPosting.service.impl;
 
+import com.career.careerlink.applicant.application.dto.ApplicationPreviewResponseDto;
+import com.career.careerlink.applicant.application.entity.Application;
+import com.career.careerlink.applicant.application.repository.ApplicationRepository;
+import com.career.careerlink.applicant.coverLetter.dto.CoverLetterSnapshotDto;
+import com.career.careerlink.applicant.resume.dto.ResumeSnapshotDto;
 import com.career.careerlink.employers.jobPosting.dto.ApplicationDto;
 import com.career.careerlink.employers.jobPosting.dto.ApplicationRequestDto;
 import com.career.careerlink.employers.jobPosting.dto.JobPostingSimpleDto;
 import com.career.careerlink.employers.jobPosting.mapper.ApplicationMapper;
 import com.career.careerlink.employers.jobPosting.service.EmpJobPostingService;
 import com.career.careerlink.employers.member.repository.EmployerUserRepository;
+import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.users.entity.EmployerUsers;
 import com.career.careerlink.users.entity.enums.AgreementStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,6 +31,8 @@ public class EmpJobPostingServiceImpl implements EmpJobPostingService {
 
     private final EmployerUserRepository employerUserRepository;
     private final ApplicationMapper applicationMapper;
+    private final ApplicationRepository applicationRepository;
+    private final ObjectMapper objectMapper;
 
 
     private String resolveEmployerId(String employerUserId) {
@@ -54,39 +63,37 @@ public class EmpJobPostingServiceImpl implements EmpJobPostingService {
 
     @Override
     @Transactional
-    public boolean updateStatuses(List<ApplicationDto> updates, String employerUserId) {
-        int updatedCount = 0;
+    public void updateStatuses(List<ApplicationDto> updates, String employerUserId) {
         for (ApplicationDto dto : updates) {
-            updatedCount += applicationMapper.updateApplicationStatus(dto.getApplicationId(),
+            applicationMapper.updateApplicationStatus(dto.getApplicationId(),
                     dto.getStatus(),
                     employerUserId);
         }
-        return updatedCount == updates.size();
     }
-//    @Override
-//    public Map<String, Object> getApplicationPreview(Integer applicationId, String employerUserId) {
-//        // 1. 지원 내역 조회 (해당 기업 소속 공고인지 체크)
-//        ApplicationDto app = applicationMapper.findByIdAndEmployerUserId(applicationId, employerUserId);
-//        if (app == null) {
-//            throw new CareerLinkException("지원 내역을 찾을 수 없습니다.");
-//        }
-//
-//
-//        // 2. 이력서 조회 (항목 포함)
-//        ResumeDto resume = resumeMapper.findDetailById(app.getResumeId());
-//
-//        // 3. 자소서 조회 (항목 포함)
-//        CoverLetterDto coverLetter = null;
-//        if (app.getCoverLetterId() != null) {
-//            coverLetter = coverLetterMapper.findDetailById(app.getCoverLetterId());
-//        }
-//
-//        // 4. 리턴 (프론트는 { resume, coverLetter } 그대로 받음)
-//        Map<String, Object> result = new HashMap<>();
-//        result.put("resume", resume);
-//        result.put("coverLetter", coverLetter);
-//        return result;
-//    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ApplicationPreviewResponseDto getApplicationPreview(Integer applicationId, String employerUserId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CareerLinkException("지원 내역을 찾을 수 없습니다."));
 
+        ResumeSnapshotDto resume = null;
+        CoverLetterSnapshotDto coverLetter = null;
+
+        try {
+            if (application.getResumeSnapshot() != null) {
+                resume = objectMapper.readValue(application.getResumeSnapshot(), ResumeSnapshotDto.class);
+            }
+            if (application.getCoverLetterSnapshot() != null) {
+                coverLetter = objectMapper.readValue(application.getCoverLetterSnapshot(), CoverLetterSnapshotDto.class);
+            }
+        } catch (Exception e) {
+            throw new CareerLinkException("스냅샷 복원 중 오류가 발생했습니다.");
+        }
+
+        return ApplicationPreviewResponseDto.builder()
+                .resume(resume)
+                .coverLetter(coverLetter)
+                .build();
+    }
 }

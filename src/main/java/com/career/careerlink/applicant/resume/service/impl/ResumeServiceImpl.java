@@ -112,7 +112,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
     // null 리스트가 오면 "모두 삭제"로 간주.
     private void syncEducations(Resume resume, List<EducationDto> incoming, String userId) {
-        List<Education> current = resume.getEducations();
+        Set<Education> current = resume.getEducations();
         if (incoming == null) { current.clear(); return; }
 
         Map<Integer, Education> byId = current.stream()
@@ -142,7 +142,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     private void syncExperiences(Resume resume, List<ExperienceDto> incoming, String userId) {
-        List<Experience> current = resume.getExperiences();
+        Set<Experience> current = resume.getExperiences();
         if (incoming == null) { current.clear(); return; }
 
         Map<Integer, Experience> byId = current.stream()
@@ -168,7 +168,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     private void syncCertifications(Resume resume, List<CertificationDto> incoming, String userId) {
-        List<Certification> current = resume.getCertifications();
+        Set<Certification> current = resume.getCertifications();
         if (incoming == null) { current.clear(); return; }
 
         Map<Integer, Certification> byId = current.stream()
@@ -194,7 +194,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     private void syncSkills(Resume resume, List<SkillDto> incoming, String userId) {
-        List<Skill> current = resume.getSkills();
+        Set<Skill> current = resume.getSkills();
         if (incoming == null) { current.clear(); return; }
 
         Map<Integer, Skill> byId = current.stream()

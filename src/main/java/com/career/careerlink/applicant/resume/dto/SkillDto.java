@@ -5,6 +5,7 @@ import com.career.careerlink.applicant.resume.entity.Skill;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class SkillDto {
                 .build();
     }
 
-    public static List<SkillDto> listOf(List<Skill> entities) {
+    public static List<SkillDto> listOf(Collection<Skill> entities) {
         if (entities == null) return Collections.emptyList();
         return entities.stream().map(SkillDto::of).collect(Collectors.toList());
     }

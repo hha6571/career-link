@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class ExperienceDto {
                 .build();
     }
 
-    public static List<ExperienceDto> listOf(List<Experience> entities) {
+    public static List<ExperienceDto> listOf(Collection<Experience> entities) {
         if (entities == null) return Collections.emptyList();
         return entities.stream().map(ExperienceDto::of).collect(Collectors.toList());
     }

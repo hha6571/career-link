@@ -6,13 +6,16 @@ import com.career.careerlink.applicant.application.entity.Application;
 import com.career.careerlink.applicant.application.entity.enums.ApplicationStatus;
 import com.career.careerlink.applicant.application.repository.ApplicationRepository;
 import com.career.careerlink.applicant.application.service.ApplicationService;
+import com.career.careerlink.applicant.coverLetter.dto.CoverLetterSnapshotDto;
 import com.career.careerlink.applicant.coverLetter.entity.CoverLetter;
 import com.career.careerlink.applicant.coverLetter.repository.CoverLetterRepository;
+import com.career.careerlink.applicant.resume.dto.ResumeSnapshotDto;
 import com.career.careerlink.applicant.resume.entity.Resume;
 import com.career.careerlink.applicant.resume.repository.ResumeRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
 import com.career.careerlink.job.entity.JobPosting;
 import com.career.careerlink.job.repository.JobRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +35,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final JobRepository jobRepository;
     private final ResumeRepository resumeRepository;
     private final CoverLetterRepository coverLetterRepository;
+    private final ObjectMapper objectMapper;
 
 
     @Override
@@ -56,7 +60,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .orElseThrow(() -> new CareerLinkException("공고를 찾을 수 없습니다."));
 
         // 3. 이력서 조회
-        Resume resume = resumeRepository.findById(requestDto.getResumeId())
+        Resume resume = resumeRepository.findWithDetailsByResumeId(requestDto.getResumeId())
                 .orElseThrow(() -> new CareerLinkException("이력서를 찾을 수 없습니다."));
 
         // 4. 자소서 조회 (선택적)
@@ -66,7 +70,25 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .orElseThrow(() -> new CareerLinkException("자소서를 찾을 수 없습니다."));
         }
 
-        // 5. Application 생성 & 저장
+        // 5. JSON 변환 (snapshot 저장용)
+        String resumeJson;
+        String coverLetterJson = null;
+
+        try {
+            ResumeSnapshotDto resumeSnap = ResumeSnapshotDto.of(resume);
+            resumeJson = objectMapper.writeValueAsString(resumeSnap);
+
+            if (coverLetter != null) {
+                CoverLetterSnapshotDto clSnap = CoverLetterSnapshotDto.of(coverLetter);
+                coverLetterJson = objectMapper.writeValueAsString(clSnap);
+            }
+        } catch (Exception  e) {
+            throw new CareerLinkException("스냅샷 변환 중 오류가 발생했습니다.");
+        }
+
+
+
+        // 6. Application 생성 & 저장
         Application application = Application.builder()
                 .jobPosting(jobPosting)
                 .resume(resume)
@@ -74,6 +96,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .userId(userId)
                 .status(ApplicationStatus.SUBMITTED)
                 .appliedAt(LocalDateTime.now())
+                .resumeSnapshot(resumeJson)           // 스냅샷 저장
+                .coverLetterSnapshot(coverLetterJson) // 스냅샷 저장
                 .createdBy(userId)
                 .updatedBy(userId)
                 .build();

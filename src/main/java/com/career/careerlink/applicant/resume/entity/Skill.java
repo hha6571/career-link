@@ -1,5 +1,6 @@
 package com.career.careerlink.applicant.resume.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,7 @@ public class Skill {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id", nullable = false)
+    @JsonIgnore
     private Resume resume;
 
     @Column(name = "skill_name", nullable = false, length = 100)

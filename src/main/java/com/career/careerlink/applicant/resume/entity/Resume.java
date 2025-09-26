@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "resumes")
@@ -54,19 +54,20 @@ public class Resume {
         this.updatedAt = LocalDateTime.now();
     }
 
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("endDate DESC, startDate DESC")
-    private List<Education> educations = new ArrayList<>();
+    private Set<Education> educations = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("startDate DESC")
-    private List<Experience> experiences = new ArrayList<>();
+    private Set<Experience> experiences = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("acquiredDate DESC")
-    private List<Certification> certifications = new ArrayList<>();
+    private Set<Certification> certifications = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("skillName ASC")
-    private List<Skill> skills = new ArrayList<>();
+    private Set<Skill> skills = new LinkedHashSet<>();
+
 }

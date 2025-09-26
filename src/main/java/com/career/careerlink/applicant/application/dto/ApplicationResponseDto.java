@@ -2,6 +2,8 @@ package com.career.careerlink.applicant.application.dto;
 
 import com.career.careerlink.applicant.application.entity.Application;
 import com.career.careerlink.applicant.application.entity.enums.ApplicationStatus;
+import com.career.careerlink.applicant.resume.entity.Resume;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -25,9 +27,9 @@ public class ApplicationResponseDto {
     private String companyName;
 
     private Integer resumeId;
-    private String resumeTitle;
-
+    private String resumeTitle; // snapshot 기반
     private Integer coverLetterId;
+
     private String userId;
     private ApplicationStatus status;
 
@@ -42,13 +44,25 @@ public class ApplicationResponseDto {
     /** 단건 변환 */
     public static ApplicationResponseDto of(Application entity) {
         if (entity == null) return null;
+
+        String resumeTitle = null;
+        if (entity.getResumeSnapshot() != null) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                Resume snapshot = mapper.readValue(entity.getResumeSnapshot(), Resume.class);
+                resumeTitle = snapshot.getTitle();
+            } catch (Exception e) {
+                resumeTitle = entity.getResume() != null ? entity.getResume().getTitle() : null;
+            }
+        }
+
         return ApplicationResponseDto.builder()
                 .applicationId(entity.getApplicationId())
                 .jobPostingId(entity.getJobPosting().getJobPostingId())
-                .jobTitle(entity.getJobPosting().getTitle())
+                .jobTitle(entity.getJobPosting().getTitle()) // 공고명은 FK 그대로 사용
                 .companyName(entity.getJobPosting().getEmployer().getCompanyName())
                 .resumeId(entity.getResume().getResumeId())
-                .resumeTitle(entity.getResume().getTitle())
+                .resumeTitle(resumeTitle) // snapshot 기반
                 .coverLetterId(entity.getCoverLetter() != null ? entity.getCoverLetter().getCoverLetterId() : null)
                 .userId(entity.getUserId())
                 .status(entity.getStatus())
@@ -67,3 +81,4 @@ public class ApplicationResponseDto {
                 .collect(Collectors.toList());
     }
 }
+

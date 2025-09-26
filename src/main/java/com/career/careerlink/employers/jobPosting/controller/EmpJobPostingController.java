@@ -1,5 +1,6 @@
 package com.career.careerlink.employers.jobPosting.controller;
 
+import com.career.careerlink.applicant.application.dto.ApplicationPreviewResponseDto;
 import com.career.careerlink.employers.jobPosting.dto.*;
 import com.career.careerlink.employers.jobPosting.service.EmpJobPostingService;
 import com.career.careerlink.global.response.SkipWrap;
@@ -61,18 +62,20 @@ public class EmpJobPostingController {
      * 지원 상태 업데이트
      */
     @PutMapping("/applications/status")
-    public boolean updateApplicationStatuses(@RequestBody List<ApplicationDto> updates,
+    public void updateApplicationStatuses(@RequestBody List<ApplicationDto> updates,
                                              Principal principal) {
         String employerUserId = principal.getName();
-        return empJobPostingService.updateStatuses(updates, employerUserId);
+        empJobPostingService.updateStatuses(updates, employerUserId);
     }
     /**
      * 지원서 미리보기 (기업 전용)
      */
-//    @GetMapping("/applications/{applicationId}/preview")
-//    public Map<String, Object> getApplicationPreview(@PathVariable Integer applicationId,
-//                                                     Principal principal) {
-//        String employerUserId = principal.getName();
-//        return empJobPostingService.getApplicationPreview(applicationId, employerUserId);
-//    }
+    @GetMapping("/applications/{applicationId}/preview")
+    public ApplicationPreviewResponseDto getApplicationPreview(
+            @PathVariable Integer applicationId,
+            Principal principal) {
+        String employerUserId = principal.getName();
+        return empJobPostingService.getApplicationPreview(applicationId, employerUserId);
+    }
+
 }

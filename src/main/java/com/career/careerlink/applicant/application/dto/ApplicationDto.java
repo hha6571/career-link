@@ -23,7 +23,8 @@ public class ApplicationDto {
     private Integer coverLetterId;
 
     /** Request → Entity 변환 */
-    public Application toEntity(JobPosting jobPosting, Resume resume, CoverLetter coverLetter, String userId) {
+    public Application toEntity(JobPosting jobPosting, Resume resume, CoverLetter coverLetter, String userId, String resumeSnapshot,
+                                String coverLetterSnapshot) {
         return Application.builder()
                 .jobPosting(jobPosting)
                 .resume(resume)
@@ -31,6 +32,8 @@ public class ApplicationDto {
                 .userId(userId)
                 .status(ApplicationStatus.SUBMITTED)
                 .appliedAt(LocalDateTime.now())
+                .resumeSnapshot(resumeSnapshot)
+                .coverLetterSnapshot(coverLetterSnapshot)
                 .createdBy(userId)
                 .createdAt(LocalDateTime.now())
                 .build();

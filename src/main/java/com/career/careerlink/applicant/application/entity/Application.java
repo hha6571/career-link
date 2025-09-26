@@ -44,6 +44,12 @@ public class Application {
     @Column(nullable = false, updatable = false)
     private LocalDateTime appliedAt;
 
+    @Column(columnDefinition = "json")
+    private String resumeSnapshot;
+
+    @Column(columnDefinition = "json")
+    private String coverLetterSnapshot;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

@@ -9,6 +9,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class EducationDto {
                 .build();
     }
 
-    public static List<EducationDto> listOf(List<Education> entities) {
+    public static List<EducationDto> listOf(Collection<Education> entities) {
         if (entities == null) return Collections.emptyList();
         return entities.stream().map(EducationDto::of).collect(Collectors.toList());
     }
