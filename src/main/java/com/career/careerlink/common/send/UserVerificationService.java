@@ -3,10 +3,12 @@ package com.career.careerlink.common.send;
 import com.career.careerlink.common.response.ErrorCode;
 import com.career.careerlink.employers.member.repository.EmployerUserRepository;
 import com.career.careerlink.global.exception.CareerLinkException;
+import com.career.careerlink.users.entity.Applicant;
 import com.career.careerlink.users.repository.ApplicantRepository;
 import com.career.careerlink.users.entity.LoginUser;
 import com.career.careerlink.users.repository.AdminRepository;
 import com.career.careerlink.users.repository.LoginUserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.model.Message;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -35,12 +38,18 @@ public class UserVerificationService {
     private final ApplicantRepository applicantRepository;
     private final EmployerUserRepository employerUserRepository;
     private final AdminRepository adminRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${spring.coolsms.api-key}")
     private String apiKey;
 
     @Value("${spring.coolsms.secret-key}")
     private String apiSecret;
+
+
+    private static final long LINK_TTL_MIN = 15;    // 토큰 유효
+    private static final long PENDING_TTL_MIN = 30; // 재전송 허용 대기
+    private static final long COOLDOWN_SEC = 60;    // 재전송 쿨다운
 
     // ---------------- 공통 메서드 ----------------
     private String generateCode() {
@@ -215,4 +224,140 @@ public class UserVerificationService {
         // 일회용 코드 폐기
         redisTemplate.delete("reactivateId:" + loginId);
     }
+
+
+    // ---------------- 기존 계정 social로그인 연결 메일 발송 ----------------
+    public String sendSocialLink(String userId, String name, String email,
+                                 String socialType, String providerUserId) {
+
+        // 1) 사용자 정보는 DB에서 신뢰값으로 재조회 (파라미터 신뢰 X)
+        Applicant user = applicantRepository.findById(userId)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.UNKNOWN_ERROR, "올바른 접근이 아닙니다."));
+
+        String safeEmail = user.getEmail();
+        String safeName  = user.getUserName();
+
+        // 2) 대기(pending) + 쿨다운 체크
+        String pendingKey  = "linkSocial:pending:" + userId;
+        String cooldownKey = "linkSocial:cooldown:" + userId;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new CareerLinkException(ErrorCode.INVALID_REQUEST, "잠시 후 다시 시도해 주세요.");
+        }
+        // pending에 provider / providerUserId 저장 (재전송 때 사용)
+        try {
+            var pending = Map.of(
+                    "provider", socialType == null ? null : socialType.toUpperCase(),
+                    "providerUserId", providerUserId
+            );
+            redisTemplate.opsForValue().set(
+                    pendingKey, objectMapper.writeValueAsString(pending), PENDING_TTL_MIN, TimeUnit.MINUTES
+            );
+        } catch (Exception e) {
+            throw new CareerLinkException(ErrorCode.UNKNOWN_ERROR, "대기 정보 저장 중 오류가 발생했습니다.");
+        }
+        // 쿨다운 부여
+        redisTemplate.opsForValue().set(cooldownKey, "1", COOLDOWN_SEC, TimeUnit.SECONDS);
+
+        // 3) 토큰 생성 + payload 저장
+        String token = UUID.randomUUID().toString();
+        var payload = new SocialLinkPayload(
+                userId,
+                safeEmail,
+                socialType == null ? null : socialType.toUpperCase(),
+                providerUserId,
+                Instant.now().getEpochSecond()
+        );
+        String tokenKey = "linkSocial:token:" + token;
+        try {
+            String json = objectMapper.writeValueAsString(payload);
+            redisTemplate.opsForValue().set(tokenKey, json, LINK_TTL_MIN, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            throw new CareerLinkException(ErrorCode.UNKNOWN_ERROR, "토큰 저장 중 오류가 발생했습니다.");
+        }
+
+        // 4) 링크 생성 (설정값 사용)
+        String linkUrl = "http://localhost:8080/api/auth/link/confirm?token=" + token;
+
+        // 5) 메일 발송 (템플릿에서 username, code=linkUrl, type 사용)
+        String type = (socialType + " 소셜 로그인 계정 연결 동의 안내").trim();
+        sendCodeMail(safeEmail, safeName, linkUrl, type,
+                "[CareerLink] 소셜 로그인 계정 연결 동의 안내",
+                "social-link-confirm");
+
+        return token;
+    }
+
+    @Transactional
+    public void confirmSocialLink(String token) {
+        String key = "linkSocial:token:" + token;
+
+        String json = redisTemplate.opsForValue().get(key);
+        if (json == null) {
+            throw new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "토큰이 만료되었거나 유효하지 않습니다.");
+        }
+
+        try {
+            SocialLinkPayload p = objectMapper.readValue(json, SocialLinkPayload.class);
+
+            boolean taken = applicantRepository
+                    .existsBySocialTypeAndSocialLoginId(p.socialType(), p.providerUserId());
+            if (taken) {
+                redisTemplate.delete(key);
+                throw new CareerLinkException(ErrorCode.INVALID_REQUEST, "이미 다른 계정에 해당 소셜이 연결되어 있습니다.");
+            }
+
+            Applicant user = applicantRepository.findById(p.userId())
+                    .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "대상 계정을 찾을 수 없습니다."));
+
+            user.setSocialType(p.socialType());
+            user.setSocialLoginId(p.providerUserId());
+            applicantRepository.save(user);
+
+            // 1회성 토큰/대기 상태 정리
+            redisTemplate.delete(key);
+            redisTemplate.delete("linkSocial:pending:" + p.userId());     // ★ 추가
+            redisTemplate.delete("linkSocial:cooldown:" + p.userId());    // 선택 (정리)
+
+        } catch (CareerLinkException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CareerLinkException(ErrorCode.UNKNOWN_ERROR, "소셜 계정 연결 처리 중 오류가 발생했습니다.");
+        }
+    }
+
+    public void resendSocialLinkByEmail(String email) {
+        Applicant user = applicantRepository.findByEmail(email)
+                .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "계정을 찾을 수 없습니다."));
+        String userId = user.getUserId();
+
+        // 쿨다운
+        String cooldownKey = "linkSocial:cooldown:" + userId;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new CareerLinkException(ErrorCode.INVALID_REQUEST, "잠시 후 다시 시도해 주세요.");
+        }
+
+        // pending 조회
+        String pendingKey = "linkSocial:pending:" + userId;
+        String json = redisTemplate.opsForValue().get(pendingKey);
+        if (json == null) {
+            throw new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "재전송 가능한 요청이 없습니다. 다시 로그인으로 시도해 주세요.");
+        }
+
+        Map<?,?> p;
+        try { p = objectMapper.readValue(json, Map.class); }
+        catch (Exception e) { throw new CareerLinkException(ErrorCode.UNKNOWN_ERROR, "대기 정보 파싱 오류"); }
+
+        String provider        = String.valueOf(p.get("provider"));
+        String providerUserId  = String.valueOf(p.get("providerUserId"));
+
+        sendSocialLink(userId, null, null, provider, providerUserId);
+    }
+
+    public static record SocialLinkPayload(
+            String userId,
+            String email,
+            String socialType,
+            String providerUserId,
+            long issuedAtEpochSec
+    ) {}
 }
