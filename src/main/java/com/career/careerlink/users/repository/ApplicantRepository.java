@@ -21,4 +21,11 @@ public interface ApplicantRepository extends JpaRepository<Applicant, String> {
        where a.loginId = :loginId
     """)
     int reactivateByLoginId(@Param("loginId") String loginId);
+    Optional<Applicant> findByEmail(String email);
+
+    boolean existsBySocialTypeAndSocialLoginId(String s, String s1);
+
+    boolean existsByEmail(String email);
+
+    Optional<Applicant> findBySocialTypeAndSocialLoginId(String provider, String providerUserId);
 }

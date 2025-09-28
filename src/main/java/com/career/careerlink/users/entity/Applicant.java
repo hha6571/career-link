@@ -20,10 +20,10 @@ public class Applicant {
     @Column(name = "user_id", nullable = false, length = 36)
     private String userId;
 
-    @Column(name = "login_id", nullable = false, unique = true)
+    @Column(name = "login_id", unique = true)
     private String loginId;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "social_type")
@@ -41,7 +41,7 @@ public class Applicant {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @Column(name = "gender", nullable = false)
+    @Column(name = "gender")
     private String gender;
 
     @Column(name = "user_type")

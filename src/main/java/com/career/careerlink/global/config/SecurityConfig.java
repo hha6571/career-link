@@ -37,17 +37,32 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            UnifiedOAuth2UserService userService,
                                            OAuth2FailureHandler failureHandler,
-                                           OAuth2SuccessHandler successHandler) throws Exception {
+                                           OAuth2SuccessHandler successHandler
+                                           ) throws Exception {
         String[] permitAllUrls = {
-                "/emp/check-bizRegNo"
-                ,"/emp/registration-requests"
+                "/api/users/check-id",
+                "/api/users/signup",
+                "/api/users/login",
+                "/emp/check-bizRegNo",
+                "/emp/registration-requests",
+                "/oauth/social/login",
+                "/api/users/send-id-code",
+                "/api/users/verify-id-code",
+                "/api/users/send-pwd-code",
+                "/api/users/verify-pwd-code",
+                "/api/users/reset-password",
+                "/api/users/send-sms",
+                "/api/users/verify-phone-code"
+                ,"/api/users/send-email-code"
+                ,"/api/users/verify-email-code"
+                ,"/api/users/reactivate/request"
+                ,"/api/users/reactivate/verify"
                 ,"/emp/signup"
+                ,"/common/**"
                 ,"/job/filters"
                 ,"/job/jobList"
                 ,"/job/job-posting/detail"
                 ,"/job/job-posting/hot"
-                ,"/common/**"
-                ,"/api/users/**"
                 ,"/notice/**"
                 ,"/faq/**"
                 ,"/main/**"
@@ -55,6 +70,7 @@ public class SecurityConfig {
                 ,"/oauth2/**"
                 ,"/login/**"
                 ,"/api/auth/link/**"
+                ,"/api/auth/social/**"
         };
 
         http
@@ -62,8 +78,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(permitAllUrls).permitAll()
-                        .requestMatchers("/api/users/reissue").authenticated()
-                        .requestMatchers("/api/users/auth/me").authenticated()
+                        .requestMatchers("/api/auth/social/**").hasRole("ONBOARDING")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
