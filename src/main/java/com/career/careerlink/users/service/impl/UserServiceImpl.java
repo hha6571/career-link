@@ -21,6 +21,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +42,11 @@ public class UserServiceImpl implements UserService {
     private final CookieUtil cookieUtil;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.same-site:Strict}")
+    private String cookieSameSite;
 
     @Override
     public void signup(SignupRequestDto dto) {
@@ -110,20 +116,20 @@ public class UserServiceImpl implements UserService {
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false) // 운영 배포땐 true로 설정
+                .secure(cookieSecure) // 운영 배포땐 true로 설정
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000) // 초 단위
-                .sameSite("Strict")
+                .sameSite(cookieSameSite)
                 .build();
 
         response.setHeader("Set-Cookie", refreshCookie.toString());
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(false) // 운영에선 true
+                .secure(cookieSecure) // 운영에선 true
                 .path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
-                .sameSite("Strict")
+                .sameSite(cookieSameSite)
                 .build();
 
         response.addHeader("Set-Cookie", accessCookie.toString());

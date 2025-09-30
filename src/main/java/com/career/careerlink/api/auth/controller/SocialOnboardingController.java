@@ -10,6 +10,7 @@ import com.career.careerlink.users.repository.ApplicantRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,11 @@ public class SocialOnboardingController {
     private final ApplicantRepository applicantRepository;
     private final JwtTokenProvider jwtTokenProvider; // 정식 토큰 발급용
     private final RedisUtil redisUtil;
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.same-site:Strict}")
+    private String cookieSameSite;
 
     @GetMapping("/me")
     public OnboardingMeResponse me(@RequestParam("code") String code) {
@@ -76,23 +82,20 @@ public class SocialOnboardingController {
         String refreshToken = jwtTokenProvider.createRefreshToken(saved.getUserId(), "USER", null);
         long expiresIn = jwtTokenProvider.getRemainingTime(accessToken);
 
-        // 로컬/프로덕션 판단 (OAuth2SuccessHandler와 동일 로직 권장)
-        boolean isLocalHttp = "localhost".equalsIgnoreCase(httpReq.getServerName()) && !httpReq.isSecure();
-
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
-                .sameSite("Strict")
+                .sameSite(cookieSameSite)
                 .build();
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000)
-                .sameSite("Strict")
+                .sameSite(cookieSameSite)
                 .build();
 
         res.addHeader("Set-Cookie", accessCookie.toString());

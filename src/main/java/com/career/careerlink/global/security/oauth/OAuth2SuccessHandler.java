@@ -37,6 +37,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final UserVerificationService verification;
     private static final Logger log = LoggerFactory.getLogger(OAuth2SuccessHandler.class);
     @Value("${app.frontend.base-url}") String frontBaseUrl;
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+    @Value("${app.cookie.same-site:Strict}")
+    private String cookieSameSite;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res, Authentication authentication)
@@ -127,17 +131,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String accessToken  = jwtTokenProvider.createAccessToken(userId, role, employerId);
         String refreshToken = jwtTokenProvider.createRefreshToken(userId, role, employerId);
 
-        boolean isLocalHttp = req.getServerName().equals("localhost") && !req.isSecure();
-
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true).secure(!isLocalHttp).path("/")
+                .httpOnly(true).secure(cookieSecure).path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000)
-                .sameSite(isLocalHttp ? "Lax" : "None").build();
+                .sameSite(cookieSameSite).build();
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
-                .httpOnly(true).secure(!isLocalHttp).path("/")
+                .httpOnly(true).secure(cookieSecure).path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
-                .sameSite(isLocalHttp ? "Lax" : "None").build();
+                .sameSite(cookieSameSite).build();
 
         res.addHeader("Set-Cookie", refreshCookie.toString());
         res.addHeader("Set-Cookie", accessCookie.toString());
