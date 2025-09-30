@@ -1,5 +1,6 @@
 package com.career.careerlink.main.service.impl;
 
+import com.career.careerlink.jobScrap.repository.JobPostingScrapRepository;
 import com.career.careerlink.main.dto.MainEmployersDtos;
 import com.career.careerlink.main.dto.MainJobsDtos;
 import com.career.careerlink.main.mapper.MainMapper;
@@ -15,14 +16,22 @@ import java.util.Map;
 public class MainServiceImpl implements MainService {
 
     private final MainMapper mainMapper;
+    private final JobPostingScrapRepository jobPostingScrapRepository;
 
     /**
      * 메인화면 공고목록
      */
-    public MainJobsDtos.MainJobsResponse getMainJobs() {
+    public MainJobsDtos.MainJobsResponse getMainJobs(String userId) {
         List<Map<String, Object>> rows = mainMapper.selectMainJobs();
         var items = rows.stream()
-                .map(MainJobsDtos.MainJobsItem::fromMap)
+                .map(m -> {
+                    boolean scrapped = false;
+                    if (userId != null && !userId.isBlank()) {
+                        scrapped = jobPostingScrapRepository
+                                .existsByUserIdAndJobPosting_JobPostingId(userId, ((Number) m.get("jobId")).intValue());
+                    }
+                    return MainJobsDtos.MainJobsItem.fromMap(m, scrapped);
+                })
                 .toList();
         return new MainJobsDtos.MainJobsResponse(items);
     }

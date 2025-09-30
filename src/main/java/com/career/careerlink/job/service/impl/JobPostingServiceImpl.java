@@ -9,6 +9,7 @@ import com.career.careerlink.common.service.CommonService;
 import com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingResponse;
 import com.career.careerlink.employers.jobPosting.dto.EmployerJobPostingSearchRequest;
 import com.career.careerlink.employers.info.entiry.Employer;
+import com.career.careerlink.jobScrap.repository.JobPostingScrapRepository;
 import com.career.careerlink.users.entity.EmployerUsers;
 import com.career.careerlink.employers.info.repository.EmployerRepository;
 import com.career.careerlink.employers.member.repository.EmployerUserRepository;
@@ -50,6 +51,7 @@ public class JobPostingServiceImpl implements JobPostingService {
     private static final String G_EDUCATION = "EDUCATION_LEVEL";
     private static final String G_CAREER    = "CAREER_LEVEL";
     private static final String G_SALARY    = "SALARY";
+    private final JobPostingScrapRepository jobPostingScrapRepository;
 
     @Transactional
     @Override
@@ -117,7 +119,7 @@ public class JobPostingServiceImpl implements JobPostingService {
     }
 
     @Override
-    public Page<JobCardResponse> getJobList(JobSearchCond c, Pageable pageable) {
+    public Page<JobCardResponse> getJobList(JobSearchCond c, Pageable pageable, String userId) {
         Specification<JobPosting> spec = Specification.allOf(
                 isActive(),
                 isDeleted(),
@@ -132,10 +134,16 @@ public class JobPostingServiceImpl implements JobPostingService {
         );
 
         var page = jobRepository.findAll(spec, pageable);
-        return page.map(this::toCard);
+        return page.map(e -> toCard(e, userId));
     }
 
-    private JobCardResponse toCard(JobPosting e) {
+    private JobCardResponse toCard(JobPosting e, String userId) {
+        boolean scrapped = false;
+        if (userId != null && !userId.isBlank()){
+            scrapped = jobPostingScrapRepository.existsByUserIdAndJobPosting_JobPostingId(
+                    userId, e.getJobPostingId()
+            );
+        }
         return JobCardResponse.builder()
                 .jobId(e.getJobPostingId())
                 .title(e.getTitle())
@@ -152,16 +160,41 @@ public class JobPostingServiceImpl implements JobPostingService {
                 .deadline(e.getApplicationDeadline())
                 .isActive(e.getIsActive())
                 .isDeleted(e.getIsDeleted())
+                .scrapped(scrapped)
                 .build();
     }
 
     @Override
     @Transactional
-    public JobPostingResponse detailJobPosting(int jobPostingId) {
+    public JobPostingResponse detailJobPosting(int jobPostingId, String userId) {
         jobRepository.incrementViewCount(jobPostingId);
 
-        return jobRepository.findDetailJobPosting(jobPostingId)
+        JobPostingResponse base = jobRepository.findDetailJobPosting(jobPostingId)
                 .orElseThrow(() -> new CareerLinkException(ErrorCode.DATA_NOT_FOUND, "해당 공고를 찾을 수 없습니다."));
+
+        boolean scrapped = false;
+        if (userId != null && !userId.isBlank()) {
+            scrapped = jobPostingScrapRepository.existsByUserIdAndJobPosting_JobPostingId(userId, jobPostingId);
+        }
+
+        // scrapped 포함하여 새 DTO 리턴
+        return JobPostingResponse.builder()
+                .jobPostingId(base.getJobPostingId())
+                .title(base.getTitle())
+                .description(base.getDescription())
+                .employerId(base.getEmployerId())
+                .companyName(base.getCompanyName())
+                .jobFieldCode(base.getJobFieldCode())
+                .educationLevelCode(base.getEducationLevelCode())
+                .locationCode(base.getLocationCode())
+                .employmentTypeCode(base.getEmploymentTypeCode())
+                .careerLevelCode(base.getCareerLevelCode())
+                .salaryCode(base.getSalaryCode())
+                .applicationDeadline(base.getApplicationDeadline())
+                .isActive(base.getIsActive())
+                .isDeleted(base.getIsDeleted())
+                .scrapped(scrapped)
+                .build();
     }
 
     @Override
@@ -287,7 +320,8 @@ public class JobPostingServiceImpl implements JobPostingService {
     }
 
 
-    public HotDtos.HotResponse getHot(HotDtos.HotRequest req) {
+    @Override
+    public HotDtos.HotResponse getHot(HotDtos.HotRequest req, String userId) {
         int limit = (req.limit() == null || req.limit() <= 0) ? 16 : Math.min(req.limit(), 50);
         var c = decode(req.cursor());
 
@@ -300,8 +334,17 @@ public class JobPostingServiceImpl implements JobPostingService {
 
 
         var items = new ArrayList<HotDtos.HotItem>(rows.size());
-        for (var r : rows) items.add(HotDtos.HotItem.fromMap(r));
 
+        for (var r : rows) {
+            Integer jobId = (Integer) r.get("jobId");
+
+            boolean scrapped = false;
+            if (userId != null && !userId.isBlank()) {
+                scrapped = jobPostingScrapRepository.existsByUserIdAndJobPosting_JobPostingId(userId, jobId);
+            }
+
+            items.add(HotDtos.HotItem.fromMap(r, scrapped));
+        }
 
         String nextCursor = null;
         boolean hasMore = false;

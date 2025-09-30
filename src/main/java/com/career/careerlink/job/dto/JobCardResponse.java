@@ -25,4 +25,6 @@ public class JobCardResponse {
     LocalDate deadline;      // applicationDeadline
     YnType isActive;
     YnType isDeleted;
+
+    Boolean scrapped;
 }

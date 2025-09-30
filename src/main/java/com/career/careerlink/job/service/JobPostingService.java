@@ -16,8 +16,8 @@ import java.util.List;
 public interface JobPostingService {
     JobPostingResponse saveJobPosting(String employerUserId, CreateJobPostingRequest req);
     JobFiltersResponse getFilters();                                      // /filters
-    Page<JobCardResponse> getJobList(JobSearchCond c, Pageable pageable); // /jobList
-    JobPostingResponse detailJobPosting(@RequestParam int jobPostingId);
+    Page<JobCardResponse> getJobList(JobSearchCond c, Pageable pageable, String userId); // /jobList
+    JobPostingResponse detailJobPosting(@RequestParam int jobPostingId, String userId);
     void updateJobPosting(Integer jobPostingId, @Valid UpdateJobPostingRequest req);
 
     // (기업/관리자) 공고조회 및 공고 게시글 삭제
@@ -27,5 +27,5 @@ public interface JobPostingService {
     int deleteBulkByAdmin(@NotBlank List<String>targetJobPostingIds);
     
     // HOT 100 공고 조회
-    HotDtos.HotResponse getHot(HotDtos.HotRequest hotRequest);
+    HotDtos.HotResponse getHot(HotDtos.HotRequest hotRequest, String userId);
 }

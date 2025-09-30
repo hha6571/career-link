@@ -18,9 +18,10 @@ public class MainJobsDtos {
             String salary,
             String deadline,
             Long viewCount,
-            Long appCount
+            Long appCount,
+            Boolean scrapped
     ) {
-        public static MainJobsItem fromMap(Map<String, Object> m) {
+        public static MainJobsItem fromMap(Map<String, Object> m, boolean scrapped) {
             return new MainJobsItem(
                     numL(m.get("jobId")),
                     (String) m.get("title"),
@@ -34,7 +35,8 @@ public class MainJobsDtos {
                     (String) m.get("salary"),
                     m.get("deadline") != null ? String.valueOf(m.get("deadline")) : null,
                     numL(m.get("viewCount")),
-                    numL(m.get("appCount"))
+                    numL(m.get("appCount")),
+                    scrapped
             );
         }
 

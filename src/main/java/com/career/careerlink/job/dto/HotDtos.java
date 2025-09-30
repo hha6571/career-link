@@ -23,10 +23,11 @@ public class HotDtos {
             String education,
             String salary,
             String deadline,
-            Integer viewCount
+            Integer viewCount,
+            Boolean scrapped
     ) {
         @SuppressWarnings("unchecked")
-        public static HotItem fromMap(Map<String, Object> m) {
+        public static HotItem fromMap(Map<String, Object> m, Boolean scrapped) {
             return new HotItem(
                     (Integer) m.get("jobId"),
                     (String) m.get("title"),
@@ -39,10 +40,12 @@ public class HotDtos {
                     (String) m.get("education"),
                     (String) m.get("salary"),
                     m.get("deadline") != null ? String.valueOf(m.get("deadline")) : null,
-                    (Integer) m.get("viewCount")
+                    (Integer) m.get("viewCount"),
+                    scrapped != null ? scrapped : false
             );
         }
     }
+
 
 
     public record HotResponse(

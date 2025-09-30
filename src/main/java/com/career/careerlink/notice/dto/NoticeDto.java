@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NoticeDto {
-    private Long noticeId;                // 공지 ID
+    private Integer noticeId;                // 공지 ID
     private NoticeType noticeType;        // 공지 유형 (GENERAL, SYSTEM, RECRUIT)
     private String title;                 // 제목
     private String writerId;              // 작성자 ID

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/main")
 @RequiredArgsConstructor
@@ -21,8 +23,9 @@ public class MainController {
      * 메인화면 인기공고 top12 조회
      */
     @GetMapping("/job-postings")
-    public MainJobsDtos.MainJobsResponse getMainJobs() {
-        return mainService.getMainJobs();
+    public MainJobsDtos.MainJobsResponse getMainJobs(Principal principal) {
+        String userId = (principal != null) ? principal.getName() : null;
+        return mainService.getMainJobs(userId);
     }
 
     /**

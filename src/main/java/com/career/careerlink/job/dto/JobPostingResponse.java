@@ -27,7 +27,14 @@ public class JobPostingResponse {
     private YnType isActive;
     private YnType isDeleted;
 
+    Boolean scrapped;
+
+    //스크랩여부 포함 안함
     public static JobPostingResponse from(JobPosting posting) {
+        return from(posting, null); // null or false로 기본 처리
+    }
+
+    public static JobPostingResponse from(JobPosting posting, Boolean scrapped) {
         return JobPostingResponse.builder()
                 .jobPostingId(posting.getJobPostingId())
                 .title(posting.getTitle())
@@ -42,6 +49,39 @@ public class JobPostingResponse {
                 .applicationDeadline(posting.getApplicationDeadline())
                 .isActive(posting.getIsActive())
                 .isDeleted(posting.getIsDeleted())
+                .scrapped(scrapped)
                 .build();
+    }
+
+    public JobPostingResponse(
+            Integer jobPostingId,
+            String title,
+            String description,
+            String employerId,
+            String companyName,
+            String jobFieldCode,
+            String educationLevelCode,
+            String locationCode,
+            String employmentTypeCode,
+            String careerLevelCode,
+            String salaryCode,
+            LocalDate applicationDeadline,
+            YnType isActive,
+            YnType isDeleted
+    ) {
+        this.jobPostingId = jobPostingId;
+        this.title = title;
+        this.description = description;
+        this.employerId = employerId;
+        this.companyName = companyName;
+        this.jobFieldCode = jobFieldCode;
+        this.educationLevelCode = educationLevelCode;
+        this.locationCode = locationCode;
+        this.employmentTypeCode = employmentTypeCode;
+        this.careerLevelCode = careerLevelCode;
+        this.salaryCode = salaryCode;
+        this.applicationDeadline = applicationDeadline;
+        this.isActive = isActive;
+        this.isDeleted = isDeleted;
     }
 }

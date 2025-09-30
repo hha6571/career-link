@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -38,7 +39,8 @@ public class JobPostingController {
             @RequestParam(required = false) List<String> empType,
             @RequestParam(required = false) List<String> edu,
             @RequestParam(required = false) List<String> exp,
-            @RequestParam(required = false) List<String> sal
+            @RequestParam(required = false) List<String> sal,
+            Principal principal
     ) {
         var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         var cond = JobSearchCond.builder()
@@ -50,7 +52,8 @@ public class JobPostingController {
                 .exp(exp)
                 .sal(sal)
                 .build();
-        return jobPostingService.getJobList(cond, pageable);
+        String userId = (principal != null) ? principal.getName() : null;
+        return jobPostingService.getJobList(cond, pageable, userId);
     }
 
     // 공고등록
@@ -65,8 +68,9 @@ public class JobPostingController {
     }
 
     @GetMapping("/job-posting/detail")
-    public JobPostingResponse detailJobPosting(@RequestParam(name = "id") int jobPostingId){
-        return jobPostingService.detailJobPosting(jobPostingId);
+    public JobPostingResponse detailJobPosting(@RequestParam(name = "id") int jobPostingId, Principal principal){
+        String userId = (principal != null) ? principal.getName() : null;
+        return jobPostingService.detailJobPosting(jobPostingId, userId);
     }
 
     @PreAuthorize("hasAnyRole('EMP','ADMIN')")
@@ -78,8 +82,10 @@ public class JobPostingController {
     @GetMapping("/job-postings/hot")
     public HotDtos.HotResponse hot(
             @RequestParam(required = false) Integer limit,
-            @RequestParam(required = false) String cursor
+            @RequestParam(required = false) String cursor,
+            Principal principal
     ) {
-        return jobPostingService.getHot(new HotDtos.HotRequest(limit, cursor));
+        String userId = (principal != null) ? principal.getName() : null;
+        return jobPostingService.getHot(new HotDtos.HotRequest(limit, cursor),userId);
     }
 }
