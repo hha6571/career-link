@@ -100,10 +100,10 @@ public class UserVerificationService {
     // 회원가입 본인인증 인증코드 발송(이메일)
     public void sendEmailVerification(String userName, String email) {
         // 이메일 존재 여부만 체크
-        boolean exists = loginUserRepository.findByEmail(email).isPresent();
+        boolean exists = loginUserRepository.existsByEmail(email);
         if (exists) {
             throw new CareerLinkException(
-                    ErrorCode.DUPLICATE_RESOURCE, // 새로운 에러코드 사용
+                    ErrorCode.DUPLICATE_RESOURCE,
                     "해당 정보로 이미 회원이 존재합니다."
             );
         }

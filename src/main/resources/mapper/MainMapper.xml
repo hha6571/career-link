@@ -87,6 +87,7 @@
             ON jp.employer_id = ep.employer_id
             AND jp.is_deleted = 'N'
             AND jp.is_active = 'Y'
+            AND jp.application_deadline <![CDATA[>=]]> SYSDATE()
         GROUP BY
             ep.employer_id, ep.company_name, ep.company_logo_url
         HAVING

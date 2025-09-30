@@ -5,6 +5,7 @@ import com.career.careerlink.job.entity.JobPosting;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class JobPostingSpecs {
@@ -59,6 +60,11 @@ public class JobPostingSpecs {
     }
     public static Specification<JobPosting> salaryIn(List<String> codes) {
         return inList("salaryCode", codes);
+    }
+
+    public static Specification<JobPosting> deadlineAfterToday() {
+        LocalDate today = LocalDate.now();
+        return (root, q, cb) -> cb.greaterThanOrEqualTo(root.get("applicationDeadline"), today);
     }
 
 }

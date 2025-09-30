@@ -232,6 +232,7 @@
         FROM job_postings jp
         WHERE jp.is_active = 'Y'
             AND jp.is_deleted = 'N'
+            AND jp.application_deadline <![CDATA[<=]]> SYSDATE()
         ORDER BY jp.view_count DESC, jp.job_posting_id DESC
         LIMIT 100
         ) h

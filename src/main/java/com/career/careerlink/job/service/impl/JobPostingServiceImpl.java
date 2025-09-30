@@ -80,6 +80,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         posting.setSalaryCode(dto.getSalaryCode());
         posting.setApplicationDeadline(dto.getApplicationDeadline());
         posting.setIsActive(dto.getIsActive());
+        posting.setViewCount(0);
         posting.setCreatedBy(employerUserId);
         posting.setUpdatedBy(employerUserId);
         posting.setIsDeleted(YnType.N);
@@ -126,7 +127,8 @@ public class JobPostingServiceImpl implements JobPostingService {
                 empTypeIn(c.getEmpType()),
                 educationIn(c.getEdu()),
                 careerLevelIn(c.getExp()),
-                salaryIn(c.getSal())
+                salaryIn(c.getSal()),
+                deadlineAfterToday()
         );
 
         var page = jobRepository.findAll(spec, pageable);

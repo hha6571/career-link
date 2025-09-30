@@ -17,5 +17,6 @@ public interface LoginUserRepository extends JpaRepository<LoginUser, String> {
     Optional<String> findUserNameByLoginId(@Param("loginId") String loginId);
     @Query("select u.email from LoginUser u where u.loginId = :loginId")
     Optional<String> findEmailByLoginId(@Param("loginId") String loginId);
+    boolean existsByEmail(String email);
 }
 
