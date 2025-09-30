@@ -62,7 +62,7 @@ public class SecurityConfig {
                 ,"/job/filters"
                 ,"/job/jobList"
                 ,"/job/job-posting/detail"
-                ,"/job/job-posting/hot"
+                ,"/job/job-postings/hot"
                 ,"/notice/**"
                 ,"/faq/**"
                 ,"/main/**"
