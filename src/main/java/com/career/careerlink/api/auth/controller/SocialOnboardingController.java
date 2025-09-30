@@ -86,6 +86,7 @@ public class SocialOnboardingController {
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")
+                .domain(".careerlink.online")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
                 .sameSite(cookieSameSite)
                 .build();
@@ -94,6 +95,7 @@ public class SocialOnboardingController {
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")
+                .domain(".careerlink.online")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000)
                 .sameSite(cookieSameSite)
                 .build();

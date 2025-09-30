@@ -133,11 +133,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true).secure(cookieSecure).path("/")
+                .domain(".careerlink.online")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpiration() / 1000)
                 .sameSite(cookieSameSite).build();
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true).secure(cookieSecure).path("/")
+                .domain(".careerlink.online")
                 .maxAge(jwtTokenProvider.getAccessTokenExpiration() / 1000)
                 .sameSite(cookieSameSite).build();
 
