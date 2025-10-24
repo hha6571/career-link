@@ -41,6 +41,9 @@ public class Employer {
     @Enumerated(EnumType.STRING)
     private AgreementStatus isApproved;
 
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
     @Column(name = "company_phone")
     private String companyPhone;
 
@@ -113,6 +116,10 @@ public class Employer {
         }
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setApprovedAt() {
+        this.approvedAt = LocalDateTime.now();
     }
 
     @PreUpdate
