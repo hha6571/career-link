@@ -1,0 +1,73 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.career.careerlink.admin.user.mapper.EmployerManageMapper">
+    <sql id="OrderByClause">
+        ORDER BY
+        <choose>
+            <when test="sort == 'employerId'">          e.employer_id</when>
+            <when test="sort == 'companyName'">         e.company_name</when>
+            <when test="sort == 'bizRegNo'">            e.biz_reg_no</when>
+            <when test="sort == 'bizRegistrationUrl'">  e.biz_registration_url</when>
+            <when test="sort == 'companyEmail'">        e.company_email</when>
+            <when test="sort == 'createdAt'">           e.created_at</when>
+            <when test="sort == 'isApproved'">          e.is_approved</when>
+            <when test="sort == 'approvedAt'">          e.approved_at</when>
+            <otherwise>                                 e.employer_id</otherwise>
+        </choose>
+        <choose>
+            <when test="direction == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+    </sql>
+
+    <sql id="BaseSelect">
+        SELECT
+        e.employer_id            AS employerId,
+        e.company_name           AS companyName,
+        e.company_email          AS companyEmail,
+        e.biz_reg_no             AS bizRegNo,
+        e.biz_registration_url   AS bizRegistrationUrl,
+        e.created_at             AS createdAt,
+        e.is_approved            AS isApproved,
+        e.approved_at            AS approvedAt
+        FROM employers e
+        <if test="req.keyword != null and req.keyword != ''">
+            AND
+            (
+            e.company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            OR e.company_email LIKE CONCAT('%', #{req.keyword}, '%')
+            OR e.biz_reg_no LIKE CONCAT('%', #{req.keyword}, '%')
+            OR e.employer_id LIKE CONCAT('%', #{req.keyword}, '%')
+            )
+        </if>
+    </sql>
+
+    <select id="employersCount" resultType="long" parameterType="map">
+        SELECT COUNT(1)
+        FROM (
+        <include refid="BaseSelect"/>
+        ) T
+    </select>
+
+    <select id="getEmployers" parameterType="map"
+            resultType="com.career.careerlink.admin.user.dto.AdminEmployerRequestDto">
+        <include refid="BaseSelect"/>
+        <include refid="OrderByClause"/>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <update id="approveIfPendingBulk" parameterType="map">
+        UPDATE employers e
+        SET e.is_approved = 'Y',
+        e.approved_at = CURRENT_TIMESTAMP,
+        e.updated_at  = CURRENT_TIMESTAMP,
+        e.updated_by =  #{adminUserId}
+        WHERE e.is_approved = 'N'
+        AND e.employer_id IN
+        <foreach collection="targetEmployerIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

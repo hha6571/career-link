@@ -18,4 +18,5 @@ public class AdminEmployerRequestDto {
     private String companyEmail;
     private LocalDateTime createdAt;
     private AgreementStatus isApproved;
+    private LocalDateTime approvedAt;
 }
